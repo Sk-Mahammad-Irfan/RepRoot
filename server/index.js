@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-// app.use(cors());
+app.use(cors());
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -21,8 +21,8 @@ app.use(
 );
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
+    origin: "*",
+    credentials: false,
   })
 );
 app.use(passport.initialize());
