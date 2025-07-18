@@ -16,7 +16,6 @@ export default function Login() {
   const location = useLocation();
   const [auth, setAuth] = useAuth();
 
-  // Email/password login handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -46,48 +45,11 @@ export default function Login() {
     }
   };
 
-  // Google login handler (after OAuth redirect)
-  const fetchGoogleUser = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/auth/user`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (res.data) {
-        setAuth({
-          ...auth,
-          user: res.data,
-          token: "session", // or handle it differently if using JWT
-        });
-        localStorage.setItem(
-          "auth",
-          JSON.stringify({ user: res.data, token: "session" })
-        );
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("Google auth failed:", err);
-    }
-  };
-
   useEffect(() => {
     if (auth?.token) {
       navigate("/");
-    } else {
-      // On OAuth redirect, try to fetch user if session exists
-      const query = new URLSearchParams(window.location.search);
-      if (query.get("from") === "google") {
-        fetchGoogleUser();
-      }
     }
   }, [auth, navigate]);
-
-  const handleGoogleLogin = () => {
-    window.open(`${import.meta.env.VITE_API_URL}/api/auth/google`, "_self");
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -126,25 +88,8 @@ export default function Login() {
             <Button type="submit" className="w-full">
               Sign In
             </Button>
-
-            <div className="flex items-center justify-center mt-4">
-              <div className="w-full border-t" />
-              <span className="px-2 text-sm text-gray-400">or</span>
-              <div className="w-full border-t" />
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={handleGoogleLogin}
-            >
-              <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
-              Sign in with Google
-            </Button>
-
             <p className="text-sm text-center text-gray-600 mt-4">
-              New to RepRoot?{" "}
+              New to RepRoot? {" "}
               <a href="/register" className="text-blue-600 hover:underline">
                 Create an account
               </a>
