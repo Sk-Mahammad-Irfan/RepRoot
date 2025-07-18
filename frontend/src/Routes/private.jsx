@@ -5,7 +5,7 @@ import axios from "axios";
 
 export default function PrivateRoute() {
   const [ok, setOk] = useState(false);
-  const [loading, setLoading] = useState(true); // 👈 to prevent premature navigation
+  const [loading, setLoading] = useState(true);
   const [auth] = useAuth();
 
   useEffect(() => {
@@ -14,11 +14,7 @@ export default function PrivateRoute() {
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/auth/user-auth`
         );
-        if (res.data.ok) {
-          setOk(true);
-        } else {
-          setOk(false);
-        }
+        setOk(res.data.ok === true);
       } catch (error) {
         setOk(false);
       } finally {
@@ -34,7 +30,14 @@ export default function PrivateRoute() {
     }
   }, [auth?.token]);
 
-  if (loading) return null; // or return a loader/spinner
+  if (loading) {
+    // You can replace this with your custom spinner component
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
 
-  return ok ? <Outlet /> : <Navigate to="/login" replace />;
+  return ok ? <Outlet /> : <Navigate to="/login" />;
 }

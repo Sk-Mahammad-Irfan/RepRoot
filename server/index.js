@@ -3,12 +3,30 @@ const authRoutes = require("./router/authRouter");
 const userRoutes = require("./router/userRouter");
 const connectDB = require("./config/db");
 const cors = require("cors");
+const passport = require("passport");
+const session = require("express-session");
+require("./google_auth/passport");
 const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 const PORT = process.env.PORT || 8080;
 
 connectDB();

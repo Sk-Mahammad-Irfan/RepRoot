@@ -1,73 +1,72 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/auth";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export default function Register() {
-  const [username, setUserName] = useState("");
+  const [role, setRole] = useState("student");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
   const [auth, setAuth] = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const isAcademicEmail = (email) => {
-    return /\.(edu|edu\.in|ac\.in)$/i.test(email);
-  };
+  const isAcademicEmail = (email) =>
+    /\.(edu|edu\.in|ac\.in)$/i.test(email.trim());
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Email validation
-    if (!isAcademicEmail(email)) {
-      setError(
-        "Please enter a valid academic email (e.g., .edu, .edu.in, .ac.in)"
-      );
+    if (!username || !email || !password) {
+      setError("All fields are required.");
       return;
-    } else {
-      setError("");
     }
 
-    try {
-      const userData = { username, email, password, role };
-
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`,
-        userData
+    if (!isAcademicEmail(email)) {
+      setError(
+        "Please enter a valid academic email (e.g. .edu, .edu.in, .ac.in)"
       );
+      return;
+    }
+
+    const endpoint =
+      role === "student"
+        ? `${import.meta.env.VITE_API_URL}/api/auth/student/register`
+        : `${import.meta.env.VITE_API_URL}/api/auth/institution/register`;
+
+    const data =
+      role === "student"
+        ? { username, email, password }
+        : { name: username, email, password };
+
+    try {
+      const res = await axios.post(endpoint, data);
 
       if (res.data.success) {
-        console.log("Successfully registered and logged in");
-
         setAuth({
           ...auth,
-          user: res.data.user,
-          token: res.data.token,
+          user: res.data.user || res.data.institution,
+          token: res.data.token || "",
         });
-
         localStorage.setItem("auth", JSON.stringify(res.data));
-
-        // ✅ Start redirect countdown
         setRedirecting(true);
       } else {
-        setError(res.data.message || "Registration failed");
+        setError(res.data.message || "Registration failed.");
       }
-    } catch (error) {
-      console.error("Registration failed:", error);
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(err.response?.data?.message || "Something went wrong.");
     }
   };
 
-  // ⏱ Handle countdown redirect
   useEffect(() => {
     if (!redirecting) return;
 
@@ -88,65 +87,71 @@ export default function Register() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-lg border">
         <CardHeader className="text-center">
-          <h2 className="text-3xl font-semibold text-gray-800">
-            Join JobPortal
-          </h2>
-          <p className="text-sm text-gray-500">
-            Create your free account and start applying today
-          </p>
+          <h2 className="text-3xl font-semibold text-gray-800">Join RepRoot</h2>
+          <div className="flex justify-center mt-4 space-x-2">
+            <Button
+              type="button"
+              variant={role === "student" ? "default" : "outline"}
+              onClick={() => setRole("student")}
+            >
+              Student
+            </Button>
+            <Button
+              type="button"
+              variant={role === "institution_admin" ? "default" : "outline"}
+              onClick={() => setRole("institution_admin")}
+            >
+              Institution Admin
+            </Button>
+          </div>
         </CardHeader>
+
         <CardContent>
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="name">Username</Label>
+              <Label htmlFor="username">
+                {role === "student" ? "Full Name" : "Institution Name"}
+              </Label>
               <Input
-                id="name"
+                id="username"
                 type="text"
-                placeholder="Jane Smith"
                 value={username}
-                onChange={(e) => setUserName(e.target.value)}
+                placeholder={role === "student" ? "Jane Doe" : "IIT Delhi"}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
+
             <div>
               <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="jane@university.edu"
                 value={email}
+                placeholder="example@university.edu"
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
+
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="********"
                 value={password}
+                placeholder="********"
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <div>
-              <Label htmlFor="role">Role</Label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value="student">Student</option>
-                <option value="institution_admin">Institution Admin</option>
-              </select>
-            </div>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
             <Button type="submit" className="w-full">
-              Create Account
+              Register as {role === "student" ? "Student" : "Institution Admin"}
             </Button>
 
             {redirecting && (
               <p className="text-green-600 text-center mt-2">
-                Account created! Redirecting in {countdown} seconds...
+                Registered! Redirecting in {countdown} seconds...
               </p>
             )}
 

@@ -1,37 +1,44 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
-  const [users, setUsers] = useState([]);
-
-  const getAllUsers = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/users/get-users`
-      );
-      setUsers(data?.users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    getAllUsers();
+    const storedUser = localStorage.getItem("auth");
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
   }, []);
-  // console.log(users);
-  // console.log(users[2]?.username);
+  console.log(currentUser?.user);
+
+  const userId = currentUser?.user?._id;
+  const userName = currentUser?.user?.name;
+  console.log(userId);
 
   return (
     <div>
       <h1>Welcome to the Home Page</h1>
       <p>This is the main page of the application.</p>
-      <ul>
-        {users.map((user) => (
-          <li key={user._id}>
-            Name: {user.username} | Email: {user.email} | Role: {user.role}
-          </li> // Adjust field names as needed
-        ))}
-      </ul>
+
+      {userName && (
+        <p className="text-lg font-semibold mt-4">
+          Logged in as: <span className="text-blue-700">{userName}</span>
+        </p>
+      )}
+
+      {userId && (
+        <p className="text-sm text-center text-gray-600 mt-4">
+          Make your profile{" "}
+          <Link
+            to={`/create-profile/${userId}`}
+            className="text-blue-600 hover:underline"
+          >
+            Create Profile
+          </Link>
+        </p>
+      )}
     </div>
   );
 };

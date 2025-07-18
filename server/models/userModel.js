@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       validate: {
-        validator: function (v) {
-          return /\.(edu|edu\.in|ac\.in)$/i.test(v);
+        validator: function (e) {
+          return /\.(edu|edu\.in|ac\.in)$/i.test(e);
         },
         message: (props) => `${props.value} is not a valid academic email.`,
       },
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "institution_admin"],
+      default: "student",
       required: true,
     },
     approvalStatus: {
@@ -38,6 +38,12 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    institution: {
+      type: mongoose.ObjectId,
+      ref: "Institution",
+      required: false,
+    },
+    googleId: { type: String },
   },
   { timestamps: true }
 );
