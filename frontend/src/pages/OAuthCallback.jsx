@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/auth";
 
-export default function OAuthCallback() {
+const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const rawUser = searchParams.get("user");
@@ -29,4 +29,6 @@ export default function OAuthCallback() {
   }, [token, rawUser]);
 
   return <p>Logging you in...</p>;
-}
+};
+
+export default AuthCallback;
