@@ -13,17 +13,14 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      validate: {
-        validator: function (e) {
-          return /\.(edu|edu\.in|ac\.in)$/i.test(e);
-        },
-        message: (props) => `${props.value} is not a valid academic email.`,
-      },
       maxLength: 100,
     },
     password: {
       type: String,
-      required: true,
+      require: function () {
+        // Password is required only if googleId is not provided
+        return !this.googleId;
+      },
       minlength: 6,
       maxlength: 128,
       trim: true,

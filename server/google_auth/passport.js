@@ -1,46 +1,55 @@
-const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/userModel");
-const dotenv = require("dotenv").config();
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.GOOGLE_CALLBACK_URL}`,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await User.findOne({ googleId: profile.id });
+module.exports = function (passport) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let user = await User.findOne({ googleId: profile.id });
+          // console.log(profile);
 
-        if (!user) {
-          user = await User.create({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails?.[0]?.value || "",
+          if (!user) {
+            user = await new User({
+              username: profile.displayName,
+              email: profile.emails[0].value,
+              role: "student",
+              googleId: profile.id,
+            }).save();
+          }
+
+          const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "3d",
           });
+
+          const userPayload = {
+            _id: user._id,
+            name: user.username,
+            email: user.email,
+            role: user.role,
+          };
+
+          return done(null, { ...userPayload, token });
+        } catch (err) {
+          console.error("Google Strategy Error:", err);
+          return done(err, null);
         }
-
-        return done(null, user);
-      } catch (err) {
-        return done(err, null);
       }
-    }
-  )
-);
+    )
+  );
 
-// Serialize the user into the session
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-// Deserialize the user from the session
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
+  passport.serializeUser((user, done) => {
     done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
+  });
+
+  passport.deserializeUser((obj, done) => {
+    done(null, obj);
+  });
+};

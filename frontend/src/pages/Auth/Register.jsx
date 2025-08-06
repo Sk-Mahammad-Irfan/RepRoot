@@ -19,21 +19,11 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAcademicEmail = (email) =>
-    /\.(edu|edu\.in|ac\.in)$/i.test(email.trim());
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!username || !email || !password) {
       setError("All fields are required.");
-      return;
-    }
-
-    if (!isAcademicEmail(email)) {
-      setError(
-        "Please enter a valid academic email (e.g. .edu, .edu.in, .ac.in)"
-      );
       return;
     }
 
@@ -82,6 +72,11 @@ export default function Register() {
 
     return () => clearInterval(timer);
   }, [redirecting, navigate, location]);
+
+  // Google login via redirect
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -161,6 +156,24 @@ export default function Register() {
                 Sign in
               </a>
             </p>
+            {role === "student" && (
+              <div className="text-center">
+                <p className="text-sm text-gray-500 my-2">or</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 hover:bg-gray-100 transition cursor-pointer"
+                  onClick={handleGoogleLogin}
+                >
+                  <img
+                    src="https://www.svgrepo.com/show/475656/google-color.svg"
+                    alt="Google"
+                    className="w-5 h-5"
+                  />
+                  Continue with Google
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

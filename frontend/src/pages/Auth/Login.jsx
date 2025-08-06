@@ -45,6 +45,12 @@ export default function Login() {
     }
   };
 
+  // Google login via redirect
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
+  };
+
+  // Redirect if already logged in
   useEffect(() => {
     if (auth?.token) {
       navigate("/");
@@ -88,8 +94,26 @@ export default function Login() {
             <Button type="submit" className="w-full">
               Sign In
             </Button>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-500 my-2">or</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 hover:bg-gray-100 transition cursor-pointer"
+                onClick={handleGoogleLogin}
+              >
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                Continue with Google
+              </Button>
+            </div>
+
             <p className="text-sm text-center text-gray-600 mt-4">
-              New to RepRoot? {" "}
+              New to RepRoot?{" "}
               <a href="/register" className="text-blue-600 hover:underline">
                 Create an account
               </a>

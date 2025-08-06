@@ -32,16 +32,22 @@ exports.requireSignIn = async (req, res, next) => {
 exports.isSuperAdmin = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
+
     if (user.role !== "super_admin") {
-      return res.status(403).json({
-        message:
-          "Access denied. You do not have permission to perform this action.",
+      return res.status(401).send({
+        success: false,
+        message: "UnAuthorized Access",
       });
+    } else {
+      // console.log(user.role);
+      next();
     }
-    next();
   } catch (error) {
     console.log(error);
-    console.error("Error in isSuperAdmin middleware:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    return res.status(401).send({
+      success: false,
+      error,
+      message: "Error in admin middleware",
+    });
   }
 };

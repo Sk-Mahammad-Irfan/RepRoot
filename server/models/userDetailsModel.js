@@ -9,7 +9,6 @@ const userDetailsSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  username: { type: String, trim: true, maxLength: 100, required: true },
   userBio: {
     type: String,
     trim: true,

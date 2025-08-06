@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const HomePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -11,11 +12,14 @@ const HomePage = () => {
       setCurrentUser(JSON.parse(storedUser));
     }
   }, []);
-  console.log(currentUser?.user);
 
   const userId = currentUser?.user?._id;
   const userName = currentUser?.user?.name;
-  console.log(userId);
+  // console.log(userName);
+  const handleLogOut = () => {
+    localStorage.removeItem("auth");
+    window.location.reload();
+  };
 
   return (
     <div>
@@ -29,15 +33,24 @@ const HomePage = () => {
       )}
 
       {userId && (
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Make your profile{" "}
-          <Link
-            to={`/create-profile/${userId}`}
-            className="text-blue-600 hover:underline"
+        <>
+          <p className="text-sm text-center text-gray-600 mt-4">
+            Make your profile{" "}
+            <Link
+              to={`/create-profile/${userId}`}
+              className="text-blue-600 hover:underline"
+            >
+              Create Profile
+            </Link>
+          </p>
+          <Button
+            type="submit"
+            className="mt-6 w-full max-w-xs bg-red-600 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 cursor-pointer"
+            onClick={handleLogOut}
           >
-            Create Profile
-          </Link>
-        </p>
+            Log Out
+          </Button>
+        </>
       )}
     </div>
   );

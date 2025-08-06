@@ -15,15 +15,6 @@ exports.registerUserController = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate academic email domain
-    const isValidAcademicEmail = (email) =>
-      /\.(edu|edu\.in|ac\.in)$/i.test(email);
-
-    if (!isValidAcademicEmail(email)) {
-      return res.status(400).json({ message: "Invalid academic email domain" });
-    }
-
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -91,7 +82,6 @@ exports.loginUserController = async (req, res) => {
 
     if (!user) {
       user = await InstitutionAdmin.findOne({ email: normalizedEmail });
-      role = "institution_admin";
     }
 
     if (!user) {
@@ -102,7 +92,10 @@ exports.loginUserController = async (req, res) => {
     }
 
     // Check approval status for institution admins
-    if (role === "institution_admin" && user.approvalStatus !== "approved") {
+    if (
+      user.role === "institution_admin" &&
+      user.approvalStatus !== "approved"
+    ) {
       return res.status(200).json({
         success: false,
         redirect: "not-approved",
@@ -115,9 +108,8 @@ exports.loginUserController = async (req, res) => {
     if (!match) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
     // Generate JWT
-    const token = JWT.sign({ _id: user._id, role }, process.env.JWT_SECRET, {
+    const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3d",
     });
 
@@ -128,7 +120,7 @@ exports.loginUserController = async (req, res) => {
         _id: user._id,
         name: user.username || user.name,
         email: user.email,
-        role,
+        role: user.role,
       },
       token,
     });
@@ -252,6 +244,9 @@ exports.updateUserProfileController = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    userExists.username = username;
+    await userExists.save();
+
     // Check if user already has a UserDetails entry
     const existingDetails = await UserDetails.findOne({ user: userId });
 
@@ -259,7 +254,6 @@ exports.updateUserProfileController = async (req, res) => {
 
     if (existingDetails) {
       // Update existing
-      existingDetails.username = username;
       existingDetails.userBio = userBio;
       existingDetails.userLocation = userLocation;
       existingDetails.education = education;
@@ -268,7 +262,6 @@ exports.updateUserProfileController = async (req, res) => {
       // Create new
       updatedProfile = await UserDetails.create({
         user: userId,
-        username,
         userBio,
         userLocation,
         education,
@@ -301,15 +294,6 @@ exports.registerInstitutionController = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Validate academic email domain
-    const isValidAcademicEmail = (email) =>
-      /\.(edu|edu\.in|ac\.in)$/i.test(email);
-
-    if (!isValidAcademicEmail(email)) {
-      return res.status(400).json({ message: "Invalid academic email domain" });
-    }
-
-    // Check if institution already exists
     const existingInstitution = await InstitutionAdmin.findOne({ email });
     if (existingInstitution) {
       return res
@@ -358,6 +342,37 @@ exports.registerInstitutionController = async (req, res) => {
   }
 };
 
+exports.institutionAdminAssignmentController = async (req, res) => {
+  try {
+    const { institutionId } = req.params;
+    const { approvalStatus } = req.body;
+    console.log(institutionId, approvalStatus);
+
+    // Validate approvalStatus
+    const validStatuses = ["pending", "approved", "rejected"];
+    if (!validStatuses.includes(approvalStatus)) {
+      return res.status(400).json({
+        message:
+          "Invalid approval status. Must be one of: pending, approved, rejected.",
+      });
+    }
+
+    const updatedUser = await InstitutionAdmin.findByIdAndUpdate(
+      institutionId,
+      { approvalStatus },
+      { new: true }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating approval status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update approval status.",
+      error,
+    });
+  }
+};
+
 exports.successGoogleLogin = async (req, res) => {
   try {
     // Check if user exists
@@ -373,7 +388,6 @@ exports.successGoogleLogin = async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Create user object with token
     const userWithToken = {
       ...(typeof req.user.toObject === "function"
         ? req.user.toObject()
@@ -412,5 +426,16 @@ exports.failureGoogleLogin = async (req, res) => {
 };
 
 exports.testController = (req, res) => {
-  res.status(200).send({ message: "Test route is working" });
+  try {
+    res
+      .status(200)
+      .send({ message: "Test route is working this is super admin" });
+  } catch (error) {
+    console.error("Error in testController:", error);
+    return res.status(500).send({
+      success: false,
+      message: "Error in testController",
+      error,
+    });
+  }
 };

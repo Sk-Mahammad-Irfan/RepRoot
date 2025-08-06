@@ -181,7 +181,12 @@ const UserProfileForm = () => {
           },
         }
       );
-
+      console.log("Submitting:", {
+        username: form.username,
+        userBio: form.userBio,
+        userLocation: form.userLocation,
+        education: cleanEducation,
+      });
       toast.success("Profile updated successfully!");
     } catch (err) {
       console.error("Error:", err);
@@ -198,7 +203,7 @@ const UserProfileForm = () => {
           `${import.meta.env.VITE_API_URL}/api/users/get-user/${id}`
         );
         const { user, userDetails } = res.data;
-        console.log(userDetails);
+        // console.log(userDetails);
 
         setForm({
           username: user?.username || "",
