@@ -8,7 +8,7 @@ import HomePage from "./pages/HomePage";
 import NotApproved from "./pages/NotApproved";
 import UserProfileForm from "./pages/userDetails/UserProfileForm";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
-import OAuthCallback from "./pages/OAuthCallBack";
+import OAuthCallback from "./pages/OAuthCallback";
 
 function App() {
   return (
