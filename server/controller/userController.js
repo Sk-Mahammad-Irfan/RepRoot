@@ -168,7 +168,12 @@ exports.getSingleUserController = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "User and userDetails fetched successfully",
-      user,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
       userDetails,
     });
   } catch (error) {

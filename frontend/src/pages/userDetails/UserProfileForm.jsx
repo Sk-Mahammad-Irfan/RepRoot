@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Select,
   SelectItem,
@@ -25,8 +26,10 @@ const degrees = [
   "Other",
 ];
 
+
 const UserProfileForm = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     username: "",
@@ -194,6 +197,8 @@ const UserProfileForm = () => {
     } finally {
       setLoading(false);
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate("/")
   };
 
   useEffect(() => {

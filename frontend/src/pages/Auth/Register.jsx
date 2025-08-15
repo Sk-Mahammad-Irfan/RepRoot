@@ -12,6 +12,7 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [auth, setAuth] = useAuth();
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false);
@@ -22,11 +23,16 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !confirmPassword) {
       setError("All fields are required.");
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setError("");
     const endpoint =
       role === "student"
         ? `${import.meta.env.VITE_API_URL}/api/auth/student/register`
@@ -135,6 +141,16 @@ export default function Register() {
                 value={password}
                 placeholder="********"
                 onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                placeholder="********"
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
 
