@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,11 +21,19 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
+    const loginPromise = axios.post(
+      `${import.meta.env.VITE_API_URL}/api/auth/login`,
+      { email, password }
+    );
+
+    toast.promise(loginPromise, {
+      loading: "Logging in...",
+      success: "Login successful!",
+      error: "Login failed. Please try again.",
+    });
+
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        { email, password }
-      );
+      const res = await loginPromise;
 
       if (res.data.success) {
         setAuth({
@@ -78,6 +87,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
