@@ -12,7 +12,8 @@ export default function PrivateRoute() {
     const authCheck = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/auth/user-auth`
+          `${import.meta.env.VITE_API_URL}/api/auth/user-auth`,
+          { headers: { Authorization: `Bearer ${auth.token}` } }
         );
         setOk(res.data.ok === true);
       } catch (error) {
@@ -22,6 +23,7 @@ export default function PrivateRoute() {
       }
     };
 
+    // Only run auth check if token exists
     if (auth?.token) {
       authCheck();
     } else {
@@ -31,7 +33,6 @@ export default function PrivateRoute() {
   }, [auth?.token]);
 
   if (loading) {
-    // You can replace this with your custom spinner component
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...

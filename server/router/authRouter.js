@@ -1,27 +1,36 @@
 const express = require("express");
 const {
-  registerUserController,
-  loginUserController,
   testController,
-  registerInstitutionController,
   institutionAdminAssignmentController,
 } = require("../controller/userController");
 const passport = require("passport");
 const dotenv = require("dotenv").config();
 const {
-  requireSignIn,
   isSuperAdmin,
+  isAuthenticated,
 } = require("../middlewares/authMiddlewares");
+
+const {
+  registerUserController,
+  loginUserController,
+  registerInstitutionController,
+  forgetPasswordController,
+  verifyOtpController,
+  changePasswordController,
+  verificationController,
+} = require("../controller/authController");
 
 const router = express.Router();
 
 router.post("/student/register", registerUserController);
+router.post("/verify", verificationController);
 router.post("/login", loginUserController);
+
 router.post("/institution/register", registerInstitutionController);
 
 router.put(
   "/institution_admin/:institutionId",
-  requireSignIn,
+  isAuthenticated,
   isSuperAdmin,
   institutionAdminAssignmentController
 );
@@ -37,11 +46,19 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect(
-      `${process.env.CLIENT_URL}/oauth-callback?token=${
-        req.user.token
-      }&user=${JSON.stringify(req.user)}`
-    );
+    try {
+      // console.log(req.user);
+      res.redirect(
+        `${process.env.CLIENT_URL}/oauth-callback?token=${
+          req.user.token
+        }&user=${JSON.stringify(req.user)}`
+      );
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Google authentication failed",
+      });
+    }
   }
 );
 
@@ -60,14 +77,18 @@ router.get("/login/success", (req, res) => {
   }
 });
 
-router.get("/user-auth", requireSignIn, (req, res) => {
+router.post("/forgot-password", forgetPasswordController);
+router.post("/verify-otp/:email", verifyOtpController);
+router.post("/change-password/:email", changePasswordController);
+
+router.get("/user-auth", isAuthenticated, (req, res) => {
   res.status(200).send({ ok: true });
 });
 
-router.get("/admin-auth", requireSignIn, isSuperAdmin, (req, res) => {
-  res.status(200).send({ ok: true });
+router.get("/admin-auth", isSuperAdmin, (req, res) => {
+  return res.status(200).send({ ok: true });
 });
 
-router.get("/test", requireSignIn, isSuperAdmin, testController);
+router.get("/test", isAuthenticated, isSuperAdmin, testController);
 
 module.exports = router;

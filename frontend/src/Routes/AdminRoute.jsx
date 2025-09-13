@@ -12,7 +12,12 @@ export default function AdminRoute() {
     const authCheck = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/auth/admin-auth`
+          `${import.meta.env.VITE_API_URL}/api/auth/admin-auth`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          }
         );
         setOk(res?.data?.ok === true);
       } catch (error) {
@@ -21,12 +26,8 @@ export default function AdminRoute() {
         setLoading(false);
       }
     };
-
     if (auth?.token) {
       authCheck();
-    } else {
-      setOk(false);
-      setLoading(false);
     }
   }, [auth?.token]);
 
@@ -40,3 +41,28 @@ export default function AdminRoute() {
 
   return ok ? <Outlet /> : <Navigate to="/login" />;
 }
+
+//         setOk(false);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (auth?.token) {
+//       authCheck();
+//     } else {
+//       setOk(false);
+//       setLoading(false);
+//     }
+//   }, [auth?.token]);
+
+//   if (loading) {
+//     return (
+//       <div className="flex justify-center items-center h-screen">
+//         Loading...
+//       </div>
+//     );
+//   }
+
+//   return ok ? <Outlet /> : <Navigate to="/login" />;
+// }

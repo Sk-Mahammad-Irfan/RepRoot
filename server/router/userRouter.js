@@ -4,14 +4,17 @@ const {
   updateUserProfileController,
   getSingleUserController,
 } = require("../controller/userController");
-const { requireSignIn } = require("../middlewares/authMiddlewares");
+const {
+  isAuthenticated,
+  isSuperAdmin,
+} = require("../middlewares/authMiddlewares");
 
 const router = express.Router();
 
-router.get("/get-users", requireSignIn, getAllUsersController);
+router.get("/get-users", isAuthenticated, isSuperAdmin, getAllUsersController);
 
-router.get("/get-user/:id", requireSignIn, getSingleUserController);
+router.get("/get-user/:id", isAuthenticated, getSingleUserController);
 
-router.put("/update-user/:id", requireSignIn, updateUserProfileController);
+router.put("/update-user/:id", isAuthenticated, updateUserProfileController);
 
 module.exports = router;

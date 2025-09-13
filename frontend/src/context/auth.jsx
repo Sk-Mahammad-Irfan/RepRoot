@@ -8,7 +8,7 @@ const AuthProvider = ({ children }) => {
     token: "",
   });
 
-  axios.defaults.headers.common["Authorization"] = auth?.token;
+  axios.defaults.headers.common["Authorization"] = `Bearer ${auth?.token}`;
   useEffect(() => {
     const data = localStorage.getItem("auth");
     if (data) {
@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (auth?.token) {
-      axios.defaults.headers.common["Authorization"] = `${auth.token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${auth.token}`;
     } else {
       delete axios.defaults.headers.common["Authorization"];
     }

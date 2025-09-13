@@ -1,4 +1,5 @@
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const { sendWelcomeMail } = require("../emailVerify/welcomeMail");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -13,20 +14,32 @@ module.exports = function (passport) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          let user = await User.findOne({ googleId: profile.id });
-          // console.log(profile);
+          const email = profile.emails[0].value;
 
-          if (!user) {
+          let user = await User.findOne({ email });
+
+          if (user) {
+            if (!user.googleId) {
+              user.googleId = profile.id;
+              user.isVerified = true;
+              await user.save();
+            }
+          } else {
             user = await new User({
               username: profile.displayName,
-              email: profile.emails[0].value,
+              email,
               role: "student",
               googleId: profile.id,
+              isVerified: true,
             }).save();
+
+            // Sending welcome email
+            await sendWelcomeMail(user.email);
           }
 
+          // Generate token
           const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: "3d",
+            expiresIn: "7d",
           });
 
           const userPayload = {

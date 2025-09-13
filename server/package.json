@@ -20,10 +20,15 @@
     "express-formidable": "^1.2.0",
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.2",
+    "mail-confirm": "^1.0.2",
+    "mailparser": "^3.7.4",
     "mongoose": "^8.16.1",
     "morgan": "^1.10.0",
+    "node-email-verifier": "^3.4.1",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "smtp-server": "^3.14.0"
   }
 }

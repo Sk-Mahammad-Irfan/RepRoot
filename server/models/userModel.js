@@ -25,6 +25,24 @@ const userSchema = new mongoose.Schema(
       maxlength: 128,
       trim: true,
     },
+    token: {
+      type: String,
+      default: null,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: {
+      type: String,
+      default: null,
+      required: false,
+    },
+    otpExpiry: {
+      type: Date,
+      default: null,
+      required: false,
+    },
     role: {
       type: String,
       default: "student",

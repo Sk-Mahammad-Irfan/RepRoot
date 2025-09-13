@@ -26,7 +26,6 @@ const degrees = [
   "Other",
 ];
 
-
 const UserProfileForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -180,16 +179,16 @@ const UserProfileForm = () => {
         },
         {
           headers: {
-            Authorization: `${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("Submitting:", {
-        username: form.username,
-        userBio: form.userBio,
-        userLocation: form.userLocation,
-        education: cleanEducation,
-      });
+      // console.log("Submitting:", {
+      //   username: form.username,
+      //   userBio: form.userBio,
+      //   userLocation: form.userLocation,
+      //   education: cleanEducation,
+      // });
       toast.success("Profile updated successfully!");
     } catch (err) {
       console.error("Error:", err);
@@ -198,7 +197,7 @@ const UserProfileForm = () => {
       setLoading(false);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
-    navigate("/")
+    navigate("/");
   };
 
   useEffect(() => {
@@ -241,7 +240,7 @@ const UserProfileForm = () => {
 
     if (id) fetchUser();
   }, [id]);
-  console.log(form.education);
+  // console.log(form.education);
 
   return (
     <form
