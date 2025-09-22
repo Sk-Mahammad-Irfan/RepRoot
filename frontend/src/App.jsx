@@ -9,11 +9,17 @@ import AdminRoute from "./Routes/AdminRoute";
 import HomePage from "./pages/HomePage";
 import VerifyEmail from "./pages/VerifyEmail";
 import Verify from "./pages/Verify";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import NotApproved from "./pages/NotApproved";
 import UserProfileForm from "./pages/userDetails/UserProfileForm";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminInstitution from "./pages/Admin/AdminInstitution";
+import ApproveInstitute from "./pages/Admin/ApproveInstitute";
 import OAuthCallback from "./pages/OAuthCallback";
+import InstituteAdminRoute from "./Routes/InstituteAdminRoute";
+import InstituteAdminDashboard from "./pages/InstituteAdmin/AdminDashboard";
 
 function App() {
   return (
@@ -33,12 +39,22 @@ function App() {
         <Route element={<PrivateRoutes />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/create-profile/:id" element={<UserProfileForm />} />
+          <Route path="/profile/:id" element={<ProfilePage />} />
         </Route>
 
         {/* Admin routes wrapped inside AdminRoute */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="all-users" element={<AdminUsers />} />
+          <Route path="all-instituteAdmin" element={<AdminInstitution />} />
+          <Route path="approve-instituteAdmin" element={<ApproveInstitute />} />
         </Route>
+
+        {/* Admin Institute route */}
+        <Route path="/institute" element={<InstituteAdminRoute />}>
+          <Route path="dashboard" element={<InstituteAdminDashboard />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

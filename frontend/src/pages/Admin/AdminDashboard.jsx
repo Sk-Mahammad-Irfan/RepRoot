@@ -1,88 +1,81 @@
-import React, { useState } from "react";
-import { Home, Users, Settings, Menu } from "lucide-react";
-import { Button } from "../../components/ui/button"; // shadcn/ui Button
-
-const navItems = [
-  { label: "Dashboard", icon: <Home size={18} />, href: "#" },
-  { label: "Users", icon: <Users size={18} />, href: "#" },
-  { label: "Settings", icon: <Settings size={18} />, href: "#" },
-];
+import React from "react";
+import { Button } from "@/components/ui/button";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Mobile Sidebar Overlay */}
-      <div
-        className={`fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden transition-opacity ${
-          sidebarOpen ? "block" : "hidden"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      />
+    <div className="flex flex-col h-screen bg-muted text-muted-foreground">
+    <Link to="/">Go Home</Link>
+      {/* Header */}
+      <header className="w-full bg-background border-b shadow-sm px-6 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+        {/* <div className="flex items-center gap-4">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="https://i.pravatar.cc/40" alt="Admin" />
+            <AvatarFallback>AD</AvatarFallback>
+          </Avatar>
+        </div> */}
+      </header>
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed z-40 top-0 left-0 h-full w-64 bg-gray-900 text-white transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="p-6 space-y-6">
-          <h2 className="text-2xl font-bold">Admin</h2>
-          <nav className="space-y-3">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="flex items-center gap-3 hover:text-blue-400"
-              >
-                {item.icon}
-                <span className="text-sm">{item.label}</span>
-              </a>
-            ))}
-          </nav>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <div className="flex flex-col flex-1 ml-0 md:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            {/* Mobile Menu Button */}
-            <button
-              className="text-gray-600 md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <Menu size={24} />
-            </button>
-            <h1 className="text-xl font-semibold">Dashboard</h1>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-gray-700 text-sm">Admin</span>
-            <img
-              src="https://i.pravatar.cc/40"
-              alt="avatar"
-              className="w-8 h-8 rounded-full border"
-            />
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 p-6 overflow-y-auto bg-gray-50">
-          <h2 className="text-2xl font-bold mb-4">
-            Welcome to the Admin Dashboard
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-foreground">
+            Welcome back 👋
           </h2>
-          <p className="mb-4 text-gray-600">
-            Manage your application and users here.
+          <p className="text-sm text-muted-foreground">
+            Here's what's happening with your platform today.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Button>Primary Action</Button>
-            <Button variant="secondary">Another Action</Button>
+        </div>
+
+        {/* Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="rounded-lg border bg-card p-4 shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-foreground">
+              Users
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage platform users.
+            </p>
+            <Button asChild>
+              <Link to="/admin/all-users">Go to Users</Link>
+            </Button>
           </div>
-        </main>
-      </div>
+          <div className="rounded-lg border bg-card p-4 shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-foreground">
+              Institution Admin
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage platform Admins.
+            </p>
+            <Button asChild>
+              <Link to="/admin/all-instituteAdmin">Go to Admins</Link>
+            </Button>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-foreground">
+              Settings
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Configure application preferences.
+            </p>
+            <Button variant="secondary">Settings</Button>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-foreground">
+              Reports
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              View usage and system stats.
+            </p>
+            <Button variant="outline">View Reports</Button>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

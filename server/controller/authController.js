@@ -12,42 +12,48 @@ exports.registerUserController = async (req, res) => {
     const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password;
 
-    // Validate input
     if (!username || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
-    // Hash the password
     const hashedPassword = await hashPassword(password);
 
-    // Create a new user with role "student"
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
       role: "student",
     });
-    // console.log(email);
 
     const token = JWT.sign({ _id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "10m",
     });
-
-    verifyMail(token, email);
     newUser.token = token;
 
-    // await sendWelcomeMail(newUser.email);
+    const emailResult = await verifyMail(token, email);
 
+    if (!emailResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: `${emailResult.message}`,
+      });
+    }
     await newUser.save();
 
-    res.status(201).json({
+    await sendWelcomeMail(newUser.email);
+
+    return res.status(201).json({
       success: true,
-      message: "Student registered successfully",
+      message: "Student registered successfully and verification email sent.",
       user: {
         _id: newUser._id,
         username: newUser.username,
@@ -57,7 +63,7 @@ exports.registerUserController = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error registering student:", error);
+    console.error("❌ Error registering student:", error);
 
     if (error.code === 11000) {
       return res.status(400).json({
@@ -101,7 +107,9 @@ exports.verificationController = async (req, res) => {
         message: "Invalid or expired token",
       });
     }
-    const user = await User.findById(decoded._id);
+    const user =
+      (await User.findById(decoded._id)) ||
+      (await InstitutionAdmin.findById(decoded._id));
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -147,7 +155,7 @@ exports.loginUserController = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Invalid username or password.",
       });
     }
 
@@ -166,7 +174,7 @@ exports.loginUserController = async (req, res) => {
     // Compare password
     const match = await comparePassword(password, user.password);
     if (!match) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid username or password." });
     }
 
     if (user.isVerified !== true) {
@@ -183,7 +191,7 @@ exports.loginUserController = async (req, res) => {
     if (user) {
       return res.status(200).json({
         success: true,
-        message: "Welcome back " + (user.username || user.name),
+        message: "Welcome " + (user.username || user.name),
         user: {
           _id: user._id,
           name: user.username || user.name,
@@ -243,6 +251,17 @@ exports.registerInstitutionController = async (req, res) => {
       password: hashedPassword,
       role: "institution_admin",
     });
+
+    const token = JWT.sign({ _id: institution._id }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
+
+    verifyMail(token, email);
+    institution.token = token;
+
+    await sendWelcomeMail(institution.email);
+
+    await institution.save();
 
     return res.status(201).json({
       success: true,

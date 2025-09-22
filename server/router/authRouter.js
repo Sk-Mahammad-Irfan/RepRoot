@@ -8,6 +8,7 @@ const dotenv = require("dotenv").config();
 const {
   isSuperAdmin,
   isAuthenticated,
+  isInstitutionAdmin,
 } = require("../middlewares/authMiddlewares");
 
 const {
@@ -86,6 +87,10 @@ router.get("/user-auth", isAuthenticated, (req, res) => {
 });
 
 router.get("/admin-auth", isSuperAdmin, (req, res) => {
+  return res.status(200).send({ ok: true });
+});
+
+router.get("/admin-institute", isInstitutionAdmin, (req, res) => {
   return res.status(200).send({ ok: true });
 });
 

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth";
@@ -12,12 +13,12 @@ import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,9 +30,13 @@ export default function Login() {
     }
   }, [auth, navigate]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSkeleton(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setError("");
     setLoading(true);
 
     const loginPromise = axios.post(
@@ -41,8 +46,10 @@ export default function Login() {
 
     toast.promise(loginPromise, {
       loading: "Logging in...",
-      // success: "Login successful!",
-      error: "Login failed. Please try again.",
+      success: (res) => res?.data?.message || "Login successful!",
+      error: (error) => {
+        return error?.response?.data?.message || "Login failed";
+      },
     });
 
     try {
@@ -54,16 +61,13 @@ export default function Login() {
           token: res?.data?.token,
         });
         localStorage.setItem("auth", JSON.stringify(res.data));
-        toast.success(res?.data?.message);
+        // toast.success(res?.data?.message);
         navigate(location.state || "/");
       } else if (res?.data?.redirect === "not-approved") {
         navigate("/not-approved");
-      } else {
-        // toast.error(res?.data?.message)
-        // setError(res?.data?.message || "Login failed");
       }
-    } catch (err) {
-      // setError(err?.response?.data?.message || "Invalid email or password.");
+    } catch (error) {
+      console.log("Login error: ", error);
     } finally {
       setLoading(false);
     }
@@ -110,139 +114,149 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-12">
       <Card className="w-full max-w-md border shadow-md rounded-lg bg-white">
-        <CardHeader className="text-center space-y-1 pb-4">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Welcome Back
-          </h2>
-          <p className="text-muted-foreground text-sm">Sign in to continue</p>
-        </CardHeader>
-
-        <CardContent>
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Email */}
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pr-10" // add padding for the icon
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Forgot Password */}
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="link"
-                onClick={handleForgotPassword}
-                disabled={forgotLoading}
-                className="text-sm p-0 h-auto"
-              >
-                {forgotLoading ? (
-                  <div className="flex items-center gap-1 text-sm">
-                    <LoaderCircle className="w-4 h-4 animate-spin" />
-                    Sending...
-                  </div>
-                ) : (
-                  "Forgot Password?"
-                )}
-              </Button>
-            </div>
-
-            {/* Error
-            {error && (
-              <p className="text-center text-sm text-red-500 font-medium">
-                {error}
+        {showSkeleton ? (
+          <CardContent className="space-y-4 p-6">
+            <Skeleton className="h-6 w-3/4 mx-auto" />
+            <Skeleton className="h-4 w-1/2 mx-auto" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-5 w-24 ml-auto" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-4 w-1/2 mx-auto" />
+          </CardContent>
+        ) : (
+          <>
+            <CardHeader className="text-center space-y-1 pb-4">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Welcome Back
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Sign in to continue
               </p>
-            )} */}
+            </CardHeader>
 
-            {/* Submit */}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <LoaderCircle className="w-4 h-4 animate-spin" />
-                  Signing in...
-                </div>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <div className="flex-grow h-px bg-border" />
-              or
-              <div className="flex-grow h-px bg-border" />
-            </div>
-
-            {/* Google Login */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={handleGoogleLogin}
-              disabled={googleLoading}
-            >
-              {googleLoading ? (
-                <>
-                  <LoaderCircle className="w-4 h-4 animate-spin" />
-                  Redirecting...
-                </>
-              ) : (
-                <>
-                  <img
-                    src="https://www.svgrepo.com/show/475656/google-color.svg"
-                    alt="Google"
-                    className="w-5 h-5"
+            <CardContent>
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                {/* Email */}
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  Continue with Google
-                </>
-              )}
-            </Button>
+                </div>
 
-            {/* Register link */}
-            <p className="text-center text-sm text-muted-foreground mt-2">
-              New here?{" "}
-              <a
-                href="/register"
-                className="text-blue-600 hover:underline transition-colors"
-              >
-                Create an account
-              </a>
-            </p>
-          </form>
-        </CardContent>
+                {/* Password */}
+                <div className="space-y-1">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Forgot Password */}
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={handleForgotPassword}
+                    disabled={forgotLoading}
+                    className="text-sm p-0 h-auto"
+                  >
+                    {forgotLoading ? (
+                      <div className="flex items-center gap-1 text-sm">
+                        <LoaderCircle className="w-4 h-4 animate-spin" />
+                        Sending...
+                      </div>
+                    ) : (
+                      "Forgot Password?"
+                    )}
+                  </Button>
+                </div>
+
+                {/* Submit */}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoaderCircle className="w-4 h-4 animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex-grow h-px bg-border" />
+                  or
+                  <div className="flex-grow h-px bg-border" />
+                </div>
+
+                {/* Google Login */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={handleGoogleLogin}
+                  disabled={googleLoading}
+                >
+                  {googleLoading ? (
+                    <>
+                      <LoaderCircle className="w-4 h-4 animate-spin" />
+                      Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      <img
+                        src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        alt="Google"
+                        className="w-5 h-5"
+                      />
+                      Continue with Google
+                    </>
+                  )}
+                </Button>
+
+                {/* Register link */}
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                  New here?{" "}
+                  <a
+                    href="/register"
+                    className="text-blue-600 hover:underline transition-colors"
+                  >
+                    Create an account
+                  </a>
+                </p>
+              </form>
+            </CardContent>
+          </>
+        )}
       </Card>
     </div>
   );

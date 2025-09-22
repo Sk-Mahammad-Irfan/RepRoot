@@ -3,7 +3,7 @@ import { useAuth } from "../context/auth";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function PrivateRoute() {
+export default function InstituteAdminRoute() {
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(true);
   const [auth] = useAuth();
@@ -12,23 +12,22 @@ export default function PrivateRoute() {
     const authCheck = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/auth/user-auth`,
-          { headers: { Authorization: `Bearer ${auth.token}` } }
+          `${import.meta.env.VITE_API_URL}/api/auth/admin-institute`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          }
         );
-        setOk(res.data.ok === true);
+        setOk(res?.data?.ok === true);
       } catch (error) {
         setOk(false);
       } finally {
         setLoading(false);
       }
     };
-
-    // Only run auth check if token exists
     if (auth?.token) {
       authCheck();
-    } else {
-      setOk(false);
-      setLoading(false);
     }
   }, [auth?.token]);
 

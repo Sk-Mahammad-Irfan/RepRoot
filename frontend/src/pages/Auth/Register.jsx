@@ -53,7 +53,7 @@ export default function Register() {
         setRedirecting(true);
         navigate("/verify");
       } else {
-        toast.error(res.data.message || "Registration failed.");
+        toast.error(err.response?.data?.message || "Registration failed.");
       }
     } catch (err) {
       console.error("Registration error:", err);

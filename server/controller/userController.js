@@ -26,7 +26,9 @@ exports.getSingleUserController = async (req, res) => {
   try {
     const userId = req.params.id;
     // console.log("Fetching user with ID:", userId);
-    const user = await User.findById(userId);
+    const user =
+      (await User.findById(userId)) ||
+      (await InstitutionAdmin.findById(userId));
 
     if (!user) {
       return res
@@ -40,7 +42,7 @@ exports.getSingleUserController = async (req, res) => {
       message: "User and userDetails fetched successfully",
       user: {
         _id: user._id,
-        username: user.username,
+        username: user.username || user.name,
         email: user.email,
         role: user.role,
       },
@@ -184,6 +186,119 @@ exports.institutionAdminAssignmentController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to update approval status.",
+      error,
+    });
+  }
+};
+
+exports.getAllInstitutionAdminController = async (req, res) => {
+  try {
+    const users = await InstitutionAdmin.find({});
+    res.status(200).send({
+      success: true,
+      message: "Users fetched successfully",
+      users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).send({
+      success: false,
+      message: "Failed to fetch users",
+      error,
+    });
+  }
+};
+
+exports.approveStatusController = async (req, res) => {
+  try {
+    const { instituteAdminId } = req.params;
+    const { approvalStatus } = req.body;
+    const status = await InstitutionAdmin.findByIdAndUpdate(
+      instituteAdminId,
+      { approvalStatus },
+      { new: true }
+    );
+    res.json(status);
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to approve institution admin",
+      error,
+    });
+  }
+};
+
+exports.approveStudentStatusController = async (req, res) => {
+  const { email } = req.body;
+  const institutionAdminId = req.user._id;
+
+  try {
+    const institutionAdmin = await InstitutionAdmin.findById(
+      institutionAdminId
+    );
+    // console.log(institutionAdmin);
+    if (!institutionAdmin) {
+      return res.status(404).send({
+        success: false,
+        message: "InstitutionAdmin not found",
+      });
+    }
+
+    if (institutionAdmin.approvalStatus !== "approved") {
+      return res.status(400).send({
+        success: false,
+        message: "Institute Admin is not approved",
+      });
+    }
+
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.approvalStatus === "approved") {
+      return res.status(400).send({
+        success: false,
+        message: "User is already approved",
+      });
+    }
+
+    user.institution = institutionAdmin._id;
+    user.approvalStatus = "approved";
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).send({
+      success: true,
+      message: "User approved and institution set",
+      user,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to approve right now",
+      error,
+    });
+  }
+};
+
+exports.deleteUserController = async (req, res) => {
+  try {
+    await InstitutionAdmin.findByIdAndDelete(req.params.uid);
+    await User.findByIdAndDelete(req.params.uid);
+
+    res.status(200).send({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to delete user",
       error,
     });
   }

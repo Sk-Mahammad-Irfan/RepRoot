@@ -1,7 +1,37 @@
 const nodemailer = require("nodemailer");
+const emailValidator = require("email-validator");
+const dns = require("dns").promises;
 
 exports.sendWelcomeMail = async (email) => {
   try {
+    if (!emailValidator.validate(email)) {
+      return {
+        success: false,
+        message: "Invalid email format",
+      };
+    }
+
+    // Step 2: Check MX records
+    const domain = email.split("@")[1];
+
+    try {
+      const mxRecords = await dns.resolveMx(domain);
+
+      if (!mxRecords || mxRecords.length === 0) {
+        return {
+          success: false,
+          message:
+            "This email address can't receive messages. Please check for typos.",
+        };
+      }
+    } catch (dnsError) {
+      console.error("DNS Lookup Error:", dnsError);
+      return {
+        success: false,
+        message:
+          "We couldn't verify this email. Please check the address and try again.",
+      };
+    }
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -16,9 +46,6 @@ exports.sendWelcomeMail = async (email) => {
       subject: "Welcome to Reproot!",
       html: `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    <div style="text-align: center;">
-      <img src="https://i.ibb.co/nQXkG7P/reproot-logo.png" alt="Reproot Logo" style="max-width: 150px; margin-bottom: 20px;" />
-    </div>
     <h1 style="color: #2c3e50;">Welcome to <span style="color: #3498db;">Reproot</span>!</h1>
     <p style="font-size: 16px; color: #555;">
       Hi there 👋,
@@ -46,7 +73,15 @@ exports.sendWelcomeMail = async (email) => {
 `,
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("✅ Email welcome sent:", info.response);
+
+    return {
+      success: true,
+      message: "Email sent successfully",
+      info: info.response,
+    };
   } catch (error) {
     console.error("Error sending welcome email:", error);
   }

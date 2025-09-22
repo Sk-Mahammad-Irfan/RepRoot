@@ -1,36 +1,62 @@
 const mongoose = require("mongoose");
 
-const institutionAdminSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: function (e) {
-        return /\.(edu|edu\.in|ac\.in)$/i.test(e);
+const institutionAdminSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: 50,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      maxLength: 100,
+    },
+    password: {
+      type: String,
+      require: function () {
+        // Password is required only if googleId is not provided
+        return !this.googleId;
       },
-      message: (props) => `${props.value} is not a valid academic email.`,
+      minlength: 6,
+      maxlength: 128,
+      trim: true,
+    },
+    role: {
+      type: String,
+      default: "institution_admin",
+      required: true,
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    token: {
+      type: String,
+      default: null,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: {
+      type: String,
+      default: null,
+      required: false,
+    },
+    otpExpiry: {
+      type: Date,
+      default: null,
+      required: false,
     },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    default: "institution_admin",
-    required: true,
-  },
-  approvalStatus: {
-    type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending",
-  },
-});
+  { timestamps: true }
+);
 
 const InstitutionAdmin = mongoose.model(
   "InstitutionAdmin",

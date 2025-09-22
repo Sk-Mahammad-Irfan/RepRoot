@@ -39,30 +39,5 @@ export default function AdminRoute() {
     );
   }
 
-  return ok ? <Outlet /> : <Navigate to="/login" />;
+  return ok ? <Outlet /> : <Navigate to="/login" replace />;
 }
-
-//         setOk(false);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     if (auth?.token) {
-//       authCheck();
-//     } else {
-//       setOk(false);
-//       setLoading(false);
-//     }
-//   }, [auth?.token]);
-
-//   if (loading) {
-//     return (
-//       <div className="flex justify-center items-center h-screen">
-//         Loading...
-//       </div>
-//     );
-//   }
-
-//   return ok ? <Outlet /> : <Navigate to="/login" />;
-// }

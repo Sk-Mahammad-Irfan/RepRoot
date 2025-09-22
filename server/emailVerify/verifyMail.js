@@ -1,50 +1,79 @@
 const nodemailer = require("nodemailer");
+const emailValidator = require("email-validator");
+const dns = require("dns").promises;
 
 // Function to send email verification link
 exports.verifyMail = async (token, email) => {
   try {
-    // Create a reusable transporter object using the default SMTP transport
+    if (!emailValidator.validate(email)) {
+      return {
+        success: false,
+        message: "Invalid email format",
+      };
+    }
+
+    const domain = email.split("@")[1];
+
+    try {
+      const mxRecords = await dns.resolveMx(domain);
+
+      if (!mxRecords || mxRecords.length === 0) {
+        return {
+          success: false,
+          message:
+            "This email address can't receive messages. Please check for typos.",
+        };
+      }
+    } catch (dnsError) {
+      console.error("DNS Lookup Error:", dnsError);
+      return {
+        success: false,
+        message:
+          "We couldn't verify this email. Please check the address and try again.",
+      };
+    }
+
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: process.env.MAIL_USER, // Sender's email
-        pass: process.env.MAIL_PASS, // Sender's email password
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
       },
     });
 
-    // Define the email configuration with HTML content
     const mailOptions = {
-      from: process.env.MAIL_USER, // Sender's email address
-      to: email, // Recipient's email address
-      subject: "Email Verification", // Email subject
+      from: process.env.MAIL_USER,
+      to: email,
+      subject: "Email Verification",
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333;">
           <h2 style="color: #4CAF50;">Welcome to RepRoot!</h2>
-          <p style="font-size: 16px;">Thank you for registering with RepRoot. Please verify your email address to complete your registration.</p>
-          
-          <p style="font-size: 16px;">Click the button below to verify your email:</p>
-
+          <p>Thank you for registering. Please verify your email address:</p>
           <a href="${process.env.CLIENT_URL}/verify/${token}" 
-             style="display: inline-block; padding: 12px 25px; margin-top: 20px; background-color: #4CAF50; color: white; text-decoration: none; font-weight: bold; border-radius: 5px;">
+             style="display:inline-block; padding:12px 25px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:5px;">
              Verify Email
           </a>
-          
-          <p style="font-size: 14px; margin-top: 20px;">If you did not register for RepRoot, please ignore this email.</p>
-          
-          <p style="font-size: 12px; color: #777; margin-top: 50px;">Best regards,<br>The RepRoot Team</p>
+          <p>If you didn’t request this, just ignore this email.</p>
+          <p style="font-size:12px; color:#777;">Best regards,<br>The RepRoot Team</p>
         </div>
       `,
     };
 
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log("❌ Could not send email:", error.message);
-      } else {
-        console.log("✅ Email sent successfully:", info.response);
-      }
-    });
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("✅ Email verify sent:", info.response);
+
+    return {
+      success: true,
+      message: "Email sent successfully",
+      info: info.response,
+    };
   } catch (error) {
-    console.error("❌ Error sending verification email:", error.message);
+    console.error("❌ Error sending email:", error);
+    return {
+      success: false,
+      message: "Internal error sending email",
+      error: error.message,
+    };
   }
 };
