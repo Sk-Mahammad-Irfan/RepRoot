@@ -111,6 +111,10 @@ export default function Login() {
     }
   };
 
+  useEffect(() => {
+    document.title = "Login - RepRoot";
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-12">
       <Card className="w-full max-w-md border shadow-md rounded-lg bg-white">

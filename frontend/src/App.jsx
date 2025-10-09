@@ -20,6 +20,8 @@ import ApproveInstitute from "./pages/Admin/ApproveInstitute";
 import OAuthCallback from "./pages/OAuthCallback";
 import InstituteAdminRoute from "./Routes/InstituteAdminRoute";
 import InstituteAdminDashboard from "./pages/InstituteAdmin/AdminDashboard";
+import ApproveStudent from "./pages/InstituteAdmin/ApproveStudent";
+import MyStudents from "./pages/InstituteAdmin/MyStudents";
 
 function App() {
   return (
@@ -53,6 +55,8 @@ function App() {
         {/* Admin Institute route */}
         <Route path="/institute" element={<InstituteAdminRoute />}>
           <Route path="dashboard" element={<InstituteAdminDashboard />} />
+          <Route path="students" element={<ApproveStudent />} />
+          <Route path="approve-students" element={<MyStudents />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

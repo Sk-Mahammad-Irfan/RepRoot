@@ -27,7 +27,7 @@ exports.getSingleUserController = async (req, res) => {
     const userId = req.params.id;
     // console.log("Fetching user with ID:", userId);
     const user =
-      (await User.findById(userId)) ||
+      (await User.findById(userId).populate("institution", "name")) ||
       (await InstitutionAdmin.findById(userId));
 
     if (!user) {
@@ -45,6 +45,7 @@ exports.getSingleUserController = async (req, res) => {
         username: user.username || user.name,
         email: user.email,
         role: user.role,
+        institute: user.institution?.name || null,
       },
       userDetails,
     });
@@ -299,6 +300,34 @@ exports.deleteUserController = async (req, res) => {
     return res.status(500).send({
       success: false,
       message: "Unable to delete user",
+      error,
+    });
+  }
+};
+
+exports.getAllApprovedStudentsByInstitutionAdmin = async (req, res) => {
+  try {
+    const instituteAdminId = req.user._id;
+    const instituteAdmin = await InstitutionAdmin.findById(instituteAdminId);
+    if (!instituteAdmin) {
+      return res.status(404).send({
+        success: false,
+        message: "InstitutionAdmin not found",
+      });
+    }
+    const users = await User.find({
+      institution: instituteAdminId,
+      approvalStatus: "approved",
+    });
+    res.status(200).send({
+      success: true,
+      message: "Approved students fetched successfully",
+      users,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to fetch users",
       error,
     });
   }

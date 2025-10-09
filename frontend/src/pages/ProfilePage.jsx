@@ -49,7 +49,7 @@ const ProfilePage = () => {
   useEffect(() => {
     setEducation(user?.userDetails?.education);
   }, [user?.userDetails?.education]);
-  console.log(education);
+  // console.log(education);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-xl space-y-8">
@@ -72,6 +72,10 @@ const ProfilePage = () => {
               </h2>
             </CardHeader>
             <CardContent className="p-4">
+              <p className="text-lg text-gray-700">
+                <span className="font-semibold">Institute:</span>{" "}
+                <span className="text-gray-500">{user.user.institute}</span>
+              </p>
               <p className="text-lg text-gray-700">
                 <span className="font-semibold">Email:</span>{" "}
                 <span className="text-gray-500">{user.user.email}</span>

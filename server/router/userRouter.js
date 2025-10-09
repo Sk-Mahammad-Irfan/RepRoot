@@ -7,6 +7,8 @@ const {
   approveStatusController,
   deleteUserController,
   approveStudentStatusController,
+  getAllApprovedStudentsByInstitutionAdmin,
+  getSingleInstituteController,
 } = require("../controller/userController");
 const {
   isAuthenticated,
@@ -46,6 +48,12 @@ router.delete(
   isAuthenticated,
   isSuperAdmin,
   deleteUserController
+);
+
+router.get(
+  "/student/my-students",
+  isInstitutionAdmin,
+  getAllApprovedStudentsByInstitutionAdmin
 );
 
 module.exports = router;

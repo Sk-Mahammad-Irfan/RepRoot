@@ -2,6 +2,7 @@ const { sendOtpMail } = require("../emailVerify/sendOtpMail");
 const { verifyMail } = require("../emailVerify/verifyMail");
 const { sendWelcomeMail } = require("../emailVerify/welcomeMail");
 const { hashPassword, comparePassword } = require("../helper/authHelper");
+const Employee = require("../models/employeeModel");
 const InstitutionAdmin = require("../models/institutionAdminModel");
 const User = require("../models/userModel");
 const JWT = require("jsonwebtoken");
@@ -483,6 +484,48 @@ exports.failureGoogleLogin = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in failureGoogleLogin",
+      error,
+    });
+  }
+};
+
+// For Employee Registration
+exports.registerEmployeeController = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).send({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const existingEmployee = await Employee.findOne({ email });
+
+    if (existingEmployee) {
+      return res.status(400).send({
+        success: false,
+        message: "Employee with this email already exists",
+      });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const newEmployee = new Employee({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    await newEmployee.save();
+    return res.status(201).send({
+      success: true,
+      message: "Employee registered successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error in registerEmployeeController",
       error,
     });
   }

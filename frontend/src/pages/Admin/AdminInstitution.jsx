@@ -40,7 +40,7 @@ const AdminInstitution = () => {
         { approvalStatus: newStatus }
       );
       toast.success("Status updated successfully!");
-      getAllUsers(); // Refresh the list
+      getAllUsers();
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Failed to update status.");
