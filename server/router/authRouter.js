@@ -19,6 +19,8 @@ const {
   verifyOtpController,
   changePasswordController,
   verificationController,
+  registerEmployeeController,
+  loginEmployeeController,
 } = require("../controller/authController");
 
 const router = express.Router();
@@ -93,6 +95,9 @@ router.get("/admin-auth", isSuperAdmin, (req, res) => {
 router.get("/admin-institute", isInstitutionAdmin, (req, res) => {
   return res.status(200).send({ ok: true });
 });
+
+router.post("/employee/register", registerEmployeeController);
+router.post("/employee/login", loginEmployeeController);
 
 router.get("/test", isAuthenticated, isSuperAdmin, testController);
 

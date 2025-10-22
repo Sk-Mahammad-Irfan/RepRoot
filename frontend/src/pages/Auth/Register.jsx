@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect } from "react";
+import EmployerRegister from "../forEmployee/EmployerRegister";
 
 export default function Register() {
   const [role, setRole] = useState("student");
@@ -77,156 +78,174 @@ export default function Register() {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-gray-50 px-4">
-      {loading && (
-        <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
-
-      <Card className="w-full max-w-md shadow-lg border relative z-0">
-        <CardHeader className="text-center">
-          <h2 className="text-3xl font-semibold text-gray-800">Join RepRoot</h2>
-          <div className="flex justify-center mt-4 space-x-2">
-            <Button
-              type="button"
-              variant={role === "student" ? "default" : "outline"}
-              onClick={() => setRole("student")}
-              disabled={loading}
-            >
-              Student
-            </Button>
-            <Button
-              type="button"
-              variant={role === "institution_admin" ? "default" : "outline"}
-              onClick={() => setRole("institution_admin")}
-              disabled={loading}
-            >
-              Institution Admin
-            </Button>
+    <div className="bg-slate-900 min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="relative w-full max-w-md">
+        {loading && (
+          <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-lg shadow-lg">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
-        </CardHeader>
+        )}
 
-        <CardContent>
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <fieldset disabled={loading} className="space-y-5">
-              <div>
-                <Label htmlFor="username">
-                  {role === "student" ? "Full Name" : "Institution Name"}
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  placeholder={role === "student" ? "Jane Doe" : "IIT Delhi"}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
+        <Card className="bg-white [box-shadow:0_0_30px_rgba(255,255,255,0.5)] border border-gray-200 rounded-lg shadow-2xl overflow-hidden relative z-0 transition-all duration-300 ease-in-out">
+          <CardHeader className="text-center p-6 border-b border-gray-100">
+            <h2 className="text-3xl font-semibold text-gray-800">
+              Join RepRoot
+            </h2>
+            <div className="flex flex-col sm:flex-row justify-center mt-4 gap-2">
+              <Button
+                type="button"
+                variant={role === "student" ? "default" : "outline"}
+                onClick={() => setRole("student")}
+                disabled={loading}
+                className="w-full sm:w-1/2"
+              >
+                Student
+              </Button>
+              <Button
+                type="button"
+                variant={role === "institution_admin" ? "default" : "outline"}
+                onClick={() => setRole("institution_admin")}
+                disabled={loading}
+                className="w-full sm:w-1/2"
+              >
+                Institution Admin
+              </Button>
+            </div>
+          </CardHeader>
 
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  placeholder="example@university.edu"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+          <CardContent className="p-6">
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <fieldset disabled={loading} className="space-y-5">
+                <div>
+                  <Label htmlFor="username">
+                    {role === "student" ? "Full Name" : "Institution Name"}
+                  </Label>
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    placeholder="********"
-                    onChange={(e) => setPassword(e.target.value)}
+                    id="username"
+                    type="text"
+                    value={username}
+                    placeholder={role === "student" ? "Jane Doe" : "IIT Delhi"}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
-                    id="confirmPassword"
-                    type={showPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    placeholder="********"
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    id="email"
+                    type="email"
+                    value={email}
+                    placeholder="example@university.edu"
+                    onChange={(e) => setEmail(e.target.value)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                 </div>
-              </div>
-            </fieldset>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Registering...
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      placeholder="********"
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                `Register as ${
-                  role === "student" ? "Student" : "Institution Admin"
-                }`
+
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      placeholder="********"
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </fieldset>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
+              <Button type="submit" className="w-full mt-2" disabled={loading}>
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Registering...
+                  </div>
+                ) : (
+                  `Register as ${
+                    role === "student" ? "Student" : "Institution Admin"
+                  }`
+                )}
+              </Button>
+
+              {redirecting && (
+                <p className="text-green-600 text-center mt-2">
+                  Registered! Redirecting in {countdown} seconds...
+                </p>
               )}
-            </Button>
 
-            {redirecting && (
-              <p className="text-green-600 text-center mt-2">
-                Registered! Redirecting in {countdown} seconds...
+              <p className="text-sm text-center text-gray-600 mt-4">
+                Already have an account?{" "}
+                <a href="/login" className="text-blue-600 hover:underline">
+                  Sign in
+                </a>
               </p>
-            )}
 
-            <p className="text-sm text-center text-gray-600 mt-4">
-              Already have an account?{" "}
-              <a href="/login" className="text-blue-600 hover:underline">
-                Sign in
+              {role === "student" && (
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 my-2">or</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 hover:bg-gray-100 transition cursor-pointer"
+                    onClick={handleGoogleLogin}
+                    disabled={loading}
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="Google"
+                      className="w-5 h-5"
+                    />
+                    Continue with Google
+                  </Button>
+                </div>
+              )}
+            </form>
+          </CardContent>
+
+          <div className="px-6 pb-4">
+            <p className="text-sm text-center text-gray-600">
+              If you want to hire someone:{" "}
+              <a
+                href="/employer/register"
+                className="text-blue-600 hover:underline"
+              >
+                Register as an Employer
               </a>
             </p>
-
-            {role === "student" && (
-              <div className="text-center">
-                <p className="text-sm text-gray-500 my-2">or</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2 hover:bg-gray-100 transition cursor-pointer"
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                >
-                  <img
-                    src="https://www.svgrepo.com/show/475656/google-color.svg"
-                    alt="Google"
-                    className="w-5 h-5"
-                  />
-                  Continue with Google
-                </Button>
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

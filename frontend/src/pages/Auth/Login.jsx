@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -116,8 +116,8 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-12">
-      <Card className="w-full max-w-md border shadow-md rounded-lg bg-white">
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4 py-12 text-center">
+      <Card className="w-full max-w-md border rounded-lg bg-white shadow-md [box-shadow:0_0_30px_rgba(255,255,255,0.5)]">
         {showSkeleton ? (
           <CardContent className="space-y-4 p-6">
             <Skeleton className="h-6 w-3/4 mx-auto" />
@@ -131,8 +131,8 @@ export default function Login() {
           </CardContent>
         ) : (
           <>
-            <CardHeader className="text-center space-y-1 pb-4">
-              <h2 className="text-2xl font-semibold tracking-tight">
+            <CardHeader className="text-center space-y-1 pb-4 pt-6">
+              <h2 className="text-2xl font-semibold tracking-tight text-gray-800">
                 Welcome Back
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -140,7 +140,7 @@ export default function Login() {
               </p>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="p-6">
               <form className="space-y-5" onSubmit={handleSubmit}>
                 {/* Email */}
                 <div className="space-y-1">
@@ -226,7 +226,7 @@ export default function Login() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full flex items-center justify-center gap-2"
+                  className="w-full flex items-center justify-center gap-2 hover:bg-gray-100 transition"
                   onClick={handleGoogleLogin}
                   disabled={googleLoading}
                 >
@@ -259,6 +259,15 @@ export default function Login() {
                 </p>
               </form>
             </CardContent>
+
+            <div className="px-6 pb-6 text-center">
+              <Link
+                to="/employer/login"
+                className="text-sm text-blue-600 hover:underline transition-colors"
+              >
+                Continue as Employer
+              </Link>
+            </div>
           </>
         )}
       </Card>

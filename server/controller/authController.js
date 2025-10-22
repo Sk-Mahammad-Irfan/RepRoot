@@ -530,3 +530,45 @@ exports.registerEmployeeController = async (req, res) => {
     });
   }
 };
+
+exports.loginEmployeeController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).send({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    const employee = await Employee.findOne({ email });
+    if (!employee) {
+      return res.status(404).send({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    const isMatch = await comparePassword(password, employee.password);
+    if (!isMatch) {
+      return res.status(401).send({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+    const token = JWT.sign({ _id: employee._id }, process.env.JWT_SECRET, {
+      expiresIn: "3d",
+    });
+    return res.status(200).send({
+      success: true,
+      message: "Employee logged in successfully",
+      token,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Error in loginEmployeeController",
+      error,
+    });
+  }
+};

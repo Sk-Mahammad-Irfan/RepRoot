@@ -22,6 +22,8 @@ import InstituteAdminRoute from "./Routes/InstituteAdminRoute";
 import InstituteAdminDashboard from "./pages/InstituteAdmin/AdminDashboard";
 import ApproveStudent from "./pages/InstituteAdmin/ApproveStudent";
 import MyStudents from "./pages/InstituteAdmin/MyStudents";
+import EmployerRegister from "./pages/forEmployee/EmployerRegister";
+import EmployerLogin from "./pages/forEmployee/EmployerLogin";
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/verify-otp/:email" element={<VerifyOtp />} />
         <Route path="/change-password/:email" element={<ChangePassword />} />
+        <Route path="/employer/register" element={<EmployerRegister />} />
+        <Route path="/employer/login" element={<EmployerLogin />} />
 
         {/* Protected routes wrapped inside PrivateRoutes */}
         <Route element={<PrivateRoutes />}>
@@ -57,6 +61,10 @@ function App() {
           <Route path="dashboard" element={<InstituteAdminDashboard />} />
           <Route path="students" element={<ApproveStudent />} />
           <Route path="approve-students" element={<MyStudents />} />
+        </Route>
+
+        <Route>
+          <Route />
         </Route>
 
         <Route path="*" element={<NotFound />} />
