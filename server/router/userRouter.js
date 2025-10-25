@@ -8,7 +8,7 @@ const {
   deleteUserController,
   approveStudentStatusController,
   getAllApprovedStudentsByInstitutionAdmin,
-  getSingleInstituteController,
+  createEmployeeDetailsController,
 } = require("../controller/userController");
 const {
   isAuthenticated,
@@ -54,6 +54,12 @@ router.get(
   "/student/my-students",
   isInstitutionAdmin,
   getAllApprovedStudentsByInstitutionAdmin
+);
+
+router.post(
+  "/create-employee-details",
+  isAuthenticated,
+  createEmployeeDetailsController
 );
 
 module.exports = router;

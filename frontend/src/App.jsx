@@ -24,6 +24,7 @@ import ApproveStudent from "./pages/InstituteAdmin/ApproveStudent";
 import MyStudents from "./pages/InstituteAdmin/MyStudents";
 import EmployerRegister from "./pages/forEmployee/EmployerRegister";
 import EmployerLogin from "./pages/forEmployee/EmployerLogin";
+import EmployerHomePage from "./pages/forEmployee/EmployerHomePage";
 
 function App() {
   return (
@@ -63,8 +64,8 @@ function App() {
           <Route path="approve-students" element={<MyStudents />} />
         </Route>
 
-        <Route>
-          <Route />
+        <Route element={<PrivateRoutes />}>
+          <Route path="/employee/home" element={<EmployerHomePage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

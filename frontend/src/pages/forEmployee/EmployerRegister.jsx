@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const EmployerRegister = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,37 +22,42 @@ const EmployerRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
+    try {
+      if (!formData.name || formData.name.length < 2) {
+        newErrors.name = "Name must be at least 2 characters";
+      }
 
-    if (!formData.name || formData.name.length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
-    }
+      if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Invalid email address";
+      }
 
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Invalid email address";
-    }
+      if (!formData.password || formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
 
-    if (!formData.password || formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+      setErrors({});
+      // console.log("Form submitted:", formData);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/employee/register`,
+        formData
+      );
 
-    setErrors({});
-    // console.log("Form submitted:", formData);
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/auth/employee/register`,
-      formData
-    );
-
-    if (response?.data?.success) {
-      alert("Registration Successful");
-    } else {
+      if (response?.data?.success) {
+        alert("Registration Successful");
+      } else {
+        alert("Registration Failed");
+      }
+      setFormData({ name: "", email: "", password: "" });
+      navigate("/employer/login");
+    } catch (error) {
       alert("Registration Failed");
+      console.log("error", error);
     }
-    setFormData({ name: "", email: "", password: "" });
   };
 
   return (
@@ -114,7 +120,12 @@ const EmployerRegister = () => {
             Register
           </Button>
         </form>
-        <Link to="/register">Register as Job Seeker</Link>
+        <div className="mt-4 ">
+          <Link to="/register">Register as Job Seeker</Link>
+        </div>
+        <div className="mt-2 ">
+          <Link to="/employer/login">Already have an account? Login</Link>
+        </div>
       </div>
     </div>
   );

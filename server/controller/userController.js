@@ -333,6 +333,46 @@ exports.getAllApprovedStudentsByInstitutionAdmin = async (req, res) => {
   }
 };
 
+exports.createEmployeeDetailsController = async (req, res) => {
+  try {
+    const { position, department, experience } = req.body;
+    // Basic validation
+    if (!position || !department || experience == null) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    // Check if user exists in User collection
+    const userId = req.params.id;
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // Check if user already has a UserDetails entry
+    const existingDetails = await UserDetails.findOne({ user: userId });
+    if (existingDetails) {
+      return res
+        .status(400)
+        .json({ message: "Employee details already exist for this user" });
+    }
+    const employeeDetails = await UserDetails.create({
+      user: userId,
+      position,
+      department,
+      experience,
+    });
+    return res.status(201).json({
+      success: true,
+      message: "Employee details created successfully",
+      userDetails: employeeDetails,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to create employee details",
+      error,
+    });
+  }
+};
+
 exports.testController = (req, res) => {
   try {
     res

@@ -541,27 +541,56 @@ exports.loginEmployeeController = async (req, res) => {
       });
     }
 
-    const employee = await Employee.findOne({ email });
-    if (!employee) {
+    const user = await Employee.findOne({ email });
+    if (!user) {
       return res.status(404).send({
         success: false,
         message: "Employee not found",
       });
     }
 
-    const isMatch = await comparePassword(password, employee.password);
+    const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
       return res.status(401).send({
         success: false,
         message: "Invalid email or password",
       });
     }
-    const token = JWT.sign({ _id: employee._id }, process.env.JWT_SECRET, {
+
+    // if (employee.approvalStatus !== "approved") {
+    //   return res.status(200).json({
+    //     success: false,
+    //     redirect: "not-approved",
+    //     message: `Account is ${employee.approvalStatus}. Awaiting SuperAdmin approval.`,
+    //     token,
+    //   });
+    // }
+
+    const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3d",
     });
-    return res.status(200).send({
+
+    if (user) {
+      return res.status(200).json({
+        success: true,
+        message: "Welcome " + user.name,
+        user: {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
+      });
+    }
+
+    res.status(200).json({
       success: true,
-      message: "Employee logged in successfully",
+      message: "Login successful" + user.name,
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
       token,
     });
   } catch (error) {

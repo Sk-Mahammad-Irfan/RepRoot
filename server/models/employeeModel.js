@@ -23,6 +23,16 @@ const employeeSchema = new mongoose.Schema({
     maxlength: 128,
     trim: true,
   },
+  approvalStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+  },
+  role: {
+    type: String,
+    default: "employee",
+    required: true,
+  },
 });
 
 const Employee = mongoose.model("Employee", employeeSchema);
