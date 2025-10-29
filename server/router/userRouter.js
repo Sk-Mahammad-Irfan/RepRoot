@@ -9,6 +9,8 @@ const {
   approveStudentStatusController,
   getAllApprovedStudentsByInstitutionAdmin,
   createEmployeeDetailsController,
+  getEmployeeDetailsController,
+  createJobPostController,
 } = require("../controller/userController");
 const {
   isAuthenticated,
@@ -57,9 +59,13 @@ router.get(
 );
 
 router.post(
-  "/create-employee-details",
+  "/create-employee-details/:id",
   isAuthenticated,
   createEmployeeDetailsController
 );
+
+router.get("/get-employee/:id", isAuthenticated, getEmployeeDetailsController);
+
+router.post("/create-job-post", isAuthenticated, createJobPostController);
 
 module.exports = router;

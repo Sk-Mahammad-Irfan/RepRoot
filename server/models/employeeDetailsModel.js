@@ -11,17 +11,21 @@ const employeeDetailsSchema = new mongoose.Schema({
     trim: true,
     maxLength: 100,
   },
-  description:{
+  description: {
     type: String,
     required: true,
     trim: true,
     maxLength: 500,
   },
-  others:{
+  others: {
     type: String,
     trim: true,
     maxLength: 500,
-  }
+  },
 });
 
-module.exports = mongoose.model("EmployeeDetails", employeeDetailsSchema);
+const EmployeeDetails = mongoose.model(
+  "EmployeeDetails",
+  employeeDetailsSchema
+);
+module.exports = EmployeeDetails;

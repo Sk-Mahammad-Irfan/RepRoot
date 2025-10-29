@@ -55,76 +55,107 @@ const EmployerRegister = () => {
       setFormData({ name: "", email: "", password: "" });
       navigate("/employer/login");
     } catch (error) {
-      alert("Registration Failed");
+      alert(error?.response?.data?.message || "Registration Failed");
       console.log("error", error);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white p-8 shadow-md rounded-md">
-        <h2 className="text-2xl font-semibold text-center mb-6">
-          Employer Register
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+      <div className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 shadow-xl rounded-xl border border-gray-200">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-semibold text-gray-800">
+            Employer Register
+          </h2>
+          <p className="text-gray-500 mt-1 text-sm">
+            Create an account to start posting jobs and managing applicants.
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
-          <div className="space-y-1">
-            <Label htmlFor="name">Name</Label>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-gray-700">
+              Full Name
+            </Label>
+            <p className="text-xs text-gray-500">
+              Use your full name as an HR representative.
+            </p>
             <Input
               id="name"
               name="name"
-              placeholder="Enter your name"
+              type="text"
               value={formData.name}
               onChange={handleChange}
+              placeholder="e.g. Sarah Johnson"
+              className="focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name}</p>
-            )}
           </div>
 
           {/* Email */}
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-gray-700">
+              Work Email
+            </Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
+              placeholder="you@company.com"
+              className="focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
-            )}
           </div>
 
           {/* Password */}
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-gray-700">
+              Password
+            </Label>
             <Input
               id="password"
               name="password"
               type="password"
-              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
+              placeholder="••••••••"
+              className="focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
-            )}
+            <p className="text-xs text-gray-500">
+              Must be at least 8 characters long.
+            </p>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full">
-            Register
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+          >
+            Create Account
           </Button>
         </form>
-        <div className="mt-4 ">
-          <Link to="/register">Register as Job Seeker</Link>
-        </div>
-        <div className="mt-2 ">
-          <Link to="/employer/login">Already have an account? Login</Link>
+
+        {/* Links */}
+        <div className="mt-8 text-center space-y-2">
+          <p className="text-sm text-gray-600">
+            Want to find a job instead?{" "}
+            <Link
+              to="/register"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Register as Job Seeker
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/employer/login"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Log in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

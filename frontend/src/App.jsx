@@ -25,6 +25,8 @@ import MyStudents from "./pages/InstituteAdmin/MyStudents";
 import EmployerRegister from "./pages/forEmployee/EmployerRegister";
 import EmployerLogin from "./pages/forEmployee/EmployerLogin";
 import EmployerHomePage from "./pages/forEmployee/EmployerHomePage";
+import EmployerDetailsPage from "./pages/forEmployee/EmployerDetailsPage";
+import EmployerJobPost from "./pages/forEmployee/EmployerJobPost";
 
 function App() {
   return (
@@ -66,7 +68,12 @@ function App() {
 
         <Route element={<PrivateRoutes />}>
           <Route path="/employee/home" element={<EmployerHomePage />} />
+          <Route
+            path="/employee/details/:id"
+            element={<EmployerDetailsPage />}
+          />
         </Route>
+        <Route path="/employee/post-job" element={<EmployerJobPost />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -575,6 +575,7 @@ exports.loginEmployeeController = async (req, res) => {
         success: true,
         message: "Welcome " + user.name,
         user: {
+          _id: user._id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -587,6 +588,7 @@ exports.loginEmployeeController = async (req, res) => {
       success: true,
       message: "Login successful" + user.name,
       user: {
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,

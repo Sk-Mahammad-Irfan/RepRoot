@@ -1,5 +1,8 @@
 const { hashPassword, comparePassword } = require("../helper/authHelper");
+const EmployeeDetails = require("../models/employeeDetailsModel");
+const Employee = require("../models/employeeModel");
 const InstitutionAdmin = require("../models/institutionAdminModel");
+const JobPost = require("../models/jobPostModel");
 const UserDetails = require("../models/userDetailsModel");
 const User = require("../models/userModel");
 const JWT = require("jsonwebtoken");
@@ -335,39 +338,118 @@ exports.getAllApprovedStudentsByInstitutionAdmin = async (req, res) => {
 
 exports.createEmployeeDetailsController = async (req, res) => {
   try {
-    const { position, department, experience } = req.body;
+    const { companyName, description, others } = req.body;
     // Basic validation
-    if (!position || !department || experience == null) {
+    if (!companyName || !description || others == null) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     // Check if user exists in User collection
-    const userId = req.params.id;
-    const userExists = await User.findById(userId);
+    const empId = req.params.id;
+    const userExists = await Employee.findById(empId);
     if (!userExists) {
       return res.status(404).json({ message: "User not found" });
     }
     // Check if user already has a UserDetails entry
-    const existingDetails = await UserDetails.findOne({ user: userId });
+    const existingDetails = await EmployeeDetails.findOne({ employee: empId });
     if (existingDetails) {
-      return res
-        .status(400)
-        .json({ message: "Employee details already exist for this user" });
+      return res.status(400).json({
+        message: "Employee details already exist for this user",
+      });
     }
-    const employeeDetails = await UserDetails.create({
-      user: userId,
-      position,
-      department,
-      experience,
+    const employeeDetails = await EmployeeDetails.create({
+      employee: empId,
+      companyName,
+      description,
+      others,
     });
     return res.status(201).json({
       success: true,
       message: "Employee details created successfully",
-      userDetails: employeeDetails,
+      employeeDetails,
     });
   } catch (error) {
     return res.status(500).send({
       success: false,
       message: "Unable to create employee details",
+      error,
+    });
+  }
+};
+
+exports.getEmployeeDetailsController = async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+    const employeeDetails = await EmployeeDetails.findOne({
+      employee: employeeId,
+    });
+    if (!employeeDetails) {
+      return res.status(404).json({ message: "Employee details not found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Employee details fetched successfully",
+      employeeDetails,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to fetch employee details",
+      error,
+    });
+  }
+};
+
+exports.createJobPostController = async (req, res) => {
+  try {
+    // Implementation for creating a job post goes here
+    const {
+      title,
+      description,
+      location,
+      experienceRequired,
+      employmentType,
+      salary,
+      requiredSkills,
+      applicationDeadline,
+      educationLevel,
+    } = req.body;
+    const employerId = req.params.id;
+
+    // Basic validation
+    if (
+      !title ||
+      !description ||
+      !location ||
+      !experienceRequired ||
+      !employmentType ||
+      !salary ||
+      !requiredSkills ||
+      !applicationDeadline ||
+      !educationLevel
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    const jobPost = await JobPost.create({
+      employer: employerId,
+      title,
+      description,
+      location,
+      experienceRequired,
+      employmentType,
+      salary,
+      requiredSkills,
+      applicationDeadline,
+      educationLevel,
+    });
+    return res.status(201).json({
+      success: true,
+      message: "Job post created successfully",
+      jobPost,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to create job post",
       error,
     });
   }
