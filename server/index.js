@@ -1,6 +1,7 @@
 const express = require("express");
 const authRoutes = require("./router/authRouter");
 const userRoutes = require("./router/userRouter");
+const jobRoutes = require("./router/jobRouter");
 const connectDB = require("./config/db");
 const cors = require("cors");
 const passport = require("passport");
@@ -34,6 +35,8 @@ connectDB();
 app.use("/api/auth", authRoutes);
 
 app.use("/api/users", userRoutes);
+
+app.use("/api/jobs", jobRoutes);
 
 // Test route
 app.get("/", (req, res) => {

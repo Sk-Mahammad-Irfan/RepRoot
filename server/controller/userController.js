@@ -349,23 +349,32 @@ exports.createEmployeeDetailsController = async (req, res) => {
     if (!userExists) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Check if user already has a UserDetails entry
-    const existingDetails = await EmployeeDetails.findOne({ employee: empId });
-    if (existingDetails) {
-      return res.status(400).json({
-        message: "Employee details already exist for this user",
+
+    userExists.companyName = companyName;
+    await userExists.save();
+
+    const existingEmpDetails = await EmployeeDetails.findOne({
+      employee: empId,
+    });
+
+    let updatedEmpDetails;
+    if (existingEmpDetails) {
+      existingEmpDetails.companyName = companyName;
+      existingEmpDetails.description = description;
+      existingEmpDetails.others = others;
+      updatedEmpDetails = await existingEmpDetails.save();
+    } else {
+      updatedEmpDetails = await EmployeeDetails.create({
+        employee: empId,
+        companyName,
+        description,
+        others,
       });
     }
-    const employeeDetails = await EmployeeDetails.create({
-      employee: empId,
-      companyName,
-      description,
-      others,
-    });
     return res.status(201).json({
       success: true,
       message: "Employee details created successfully",
-      employeeDetails,
+      employeeDetails: updatedEmpDetails,
     });
   } catch (error) {
     return res.status(500).send({
@@ -401,55 +410,124 @@ exports.getEmployeeDetailsController = async (req, res) => {
 
 exports.createJobPostController = async (req, res) => {
   try {
-    // Implementation for creating a job post goes here
     const {
       title,
       description,
       location,
-      experienceRequired,
       employmentType,
-      salary,
+      experienceLevel,
+      industry,
       requiredSkills,
       applicationDeadline,
       educationLevel,
+      salary,
     } = req.body;
+
     const employerId = req.params.id;
 
-    // Basic validation
     if (
       !title ||
       !description ||
       !location ||
-      !experienceRequired ||
       !employmentType ||
-      !salary ||
+      !experienceLevel ||
+      !industry ||
       !requiredSkills ||
       !applicationDeadline ||
-      !educationLevel
+      !educationLevel ||
+      !salary
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const employeeDetails = await EmployeeDetails.findOne({
+      employee: employerId,
+    }).lean();
+
+    const companyName = employeeDetails?.companyName || null;
+
+    if (!companyName) {
+      return res.status(500).send({
+        success: false,
+        message: "Company name is missing",
+      });
+    }
+
     const jobPost = await JobPost.create({
       employer: employerId,
       title,
       description,
       location,
-      experienceRequired,
+      experienceRequired: experienceLevel,
       employmentType,
       salary,
       requiredSkills,
       applicationDeadline,
       educationLevel,
+      industry,
+      ...(companyName && { companyName }),
     });
+
     return res.status(201).json({
       success: true,
       message: "Job post created successfully",
       jobPost,
     });
   } catch (error) {
-    return res.status(500).send({
+    console.error(error);
+    return res.status(500).json({
       success: false,
       message: "Unable to create job post",
+      error: error.message,
+    });
+  }
+};
+
+exports.getJobPostsController = async (req, res) => {
+  try {
+    const empId = req.params.id;
+    const jobPosts = await JobPost.find({ employer: empId }).populate(
+      "employer",
+      " name email "
+    );
+    if (!jobPosts) {
+      return res.status(404).json({ message: "No job posts found" });
+    }
+    const jobDetails = await JobPost.find({ _id: empId });
+    if (!jobDetails) {
+      return res.status(404).json({ message: "No job details found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Job posts fetched successfully",
+      jobPosts,
+      jobDetails,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to fetch job posts",
+      error,
+    });
+  }
+};
+
+exports.getAllJobPostsController = async (req, res) => {
+  try {
+    const jobPosts = await JobPost.find({});
+    if (!jobPosts) {
+      return res.status(404).json({ message: "No job posts found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Job posts fetched successfully",
+      jobPosts,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to fetch job posts",
       error,
     });
   }

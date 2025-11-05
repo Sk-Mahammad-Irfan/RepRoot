@@ -1,19 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+
 import toast from "react-hot-toast";
 
 const HomePage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recentJobs, setRecentJobs] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +54,34 @@ const HomePage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const token = JSON.parse(localStorage.getItem("auth") || "{}")?.token;
+    if (!token) {
+      return;
+    }
+    if (user?.user?.role === "student") {
+      try {
+        const fetchRecentJobs = async () => {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/jobs/get-jobs`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          console.log(res?.data);
+          if (res?.data?.success) {
+            setRecentJobs(res.data.jobPosts);
+          }
+        };
+        fetchRecentJobs();
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      return;
+    }
+  }, [user?.user?.role]);
+
   const handleLogOut = () => {
     try {
       localStorage.removeItem("auth");
@@ -85,114 +107,112 @@ const HomePage = () => {
   const userId = user?.user?._id;
   return (
     <>
-      {user?.user?.role == "super_admin" ? (
-        <>
-          <Link to="/admin/dashboard">GO SUPER ADMIN</Link>
-          <div className="p-6 max-w-xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">
-                  Welcome to the Home Page
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  This is the main page of the application.
+      <div className="min-h-screen bg-gray-900 text-gray-100">
+        {user?.user?.role === "super_admin" ? (
+          <div className="max-w-4xl mx-auto p-6">
+            {/* Super Admin Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold text-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+                Super Admin Dashboard
+              </h1>
+              <Link
+                to="/admin/dashboard"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-lg transition duration-200"
+              >
+                GO SUPER ADMIN
+              </Link>
+            </div>
+
+            {/* Main Card */}
+            <div className="bg-gray-800 rounded-xl shadow-xl p-8 backdrop-blur-sm border border-gray-700">
+              <h2 className="text-2xl font-semibold mb-2">
+                Welcome to the Home Page
+              </h2>
+              <p className="text-gray-400 mb-6">
+                This is the main page of the application.
+              </p>
+
+              {user?.user?.username ? (
+                <p className="text-lg font-semibold mb-4">
+                  Logged in as:{" "}
+                  <span className="text-purple-400">{user.user.username}</span>
                 </p>
-              </CardHeader>
-              <CardContent>
-                {user?.user?.username ? (
-                  <p className="text-lg font-semibold mt-2">
-                    Logged in as:{" "}
-                    <span className="text-primary">{user.user.username}</span>
-                  </p>
-                ) : (
-                  <p className="text-sm text-gray-600 mt-2">
-                    You are not logged in. Please{" "}
-                    <Link to="/login" className="text-blue-600 hover:underline">
-                      log in
+              ) : (
+                <p className="text-gray-500 mb-4">
+                  You are not logged in. Please{" "}
+                  <Link className="text-purple-400 hover:underline" to="/login">
+                    log in
+                  </Link>
+                  .
+                </p>
+              )}
+
+              {user?.user?._id && (
+                <>
+                  <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                    <Link to={`/profile/${user.user._id}`} className="flex-1">
+                      <button className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg shadow-md transition duration-200 font-semibold">
+                        Go to Profile
+                      </button>
                     </Link>
-                    .
+                    <button
+                      onClick={handleLogOut}
+                      className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition duration-200 font-semibold"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                  <p className="text-gray-400">
+                    Don’t have a profile yet?{" "}
+                    <Link
+                      to={`/create-profile/${user.user._id}`}
+                      className="text-purple-400 hover:underline font-semibold"
+                    >
+                      Create Profile
+                    </Link>
                   </p>
-                )}
-
-                {user?.user?._id && (
-                  <>
-                    <p className="text-sm text-gray-600 mt-4">
-                      Make your profile{" "}
-                      <Link
-                        to={`/create-profile/${user.user._id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Create Profile
-                      </Link>
-                    </p>
-
-                    <div className="mt-6 flex flex-col gap-3 max-w-xs">
-                      <Link to={`/profile/${user.user._id}`}>
-                        <Button variant="outline" className="w-full">
-                          Go to Profile
-                        </Button>
-                      </Link>
-
-                      <Button
-                        variant="destructive"
-                        className="w-full"
-                        onClick={handleLogOut}
-                      >
-                        Log Out
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+                </>
+              )}
+            </div>
           </div>
-        </>
-      ) : user?.user?.role == "institution_admin" ? (
-        <>
-          <div
-            className="min-h-screen bg-cover bg-center bg-no-repeat relative flex items-center justify-center px-4 py-10"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1950&q=80')`,
-            }}
-          >
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-blue-900/60 backdrop-blur-sm z-0"></div>
+        ) : user?.user?.role === "institution_admin" ? (
+          <div className="min-h-screen flex items-center justify-center bg-gray-900">
+            <div className="relative bg-gray-800/90 backdrop-blur-lg shadow-2xl rounded-xl max-w-3xl w-full p-10 border border-gray-700">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-700/30 to-blue-900/50 rounded-xl"></div>
 
-            {/* Content Container */}
-            <div className="relative z-10 bg-white/90 backdrop-blur-lg shadow-2xl rounded-xl max-w-3xl w-full p-10 border border-gray-200">
-              {/* Top Right Admin Link */}
-              <div className="mb-6 text-right">
-                <Link
-                  to="/institute/dashboard"
-                  className="text-sm font-semibold text-blue-700 hover:underline transition duration-150"
-                >
-                  Go to Institute Admin
-                </Link>
-              </div>
+              <div className="relative z-10 text-center">
+                <div className="flex justify-between items-center mb-6">
+                  <h1 className="text-3xl font-bold text-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+                    Institute Admin Portal
+                  </h1>
+                  <Link
+                    to="/institute/dashboard"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-lg transition duration-200"
+                  >
+                    GO INSTITUTE ADMIN
+                  </Link>
+                </div>
 
-              {/* Card Content */}
-              <div className="text-center">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight mb-2">
-                  🎓 Welcome to the Institute Portal
+                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-400">
+                  Welcome to the Institute Portal
                 </h1>
-                <p className="text-lg text-gray-600 mb-8">
+                <p className="text-gray-300 mb-6">
                   Centralized dashboard for users and administrators
                 </p>
 
-                {/* Auth Status */}
                 {user?.user?.username ? (
-                  <p className="text-lg font-medium text-gray-800 mb-6">
+                  <p className="text-lg font-medium mb-6">
                     Logged in as:{" "}
-                    <span className="text-blue-700 font-semibold">
+                    <span className="text-purple-400 font-semibold">
                       {user.user.username}
                     </span>
                   </p>
                 ) : (
-                  <p className="text-md text-gray-700 mb-6">
+                  <p className="text-gray-400 mb-6">
                     You are not logged in. Please{" "}
                     <Link
+                      className="text-purple-400 hover:underline font-semibold"
                       to="/login"
-                      className="text-blue-600 hover:underline font-semibold"
                     >
                       log in
                     </Link>
@@ -200,116 +220,109 @@ const HomePage = () => {
                   </p>
                 )}
 
-                {/* Profile Actions */}
                 {user?.user?._id && (
-                  <div className="text-center">
-                    <p className="text-sm text-gray-700 mb-4">
-                      Don’t have a profile yet?{" "}
-                      <Link
-                        to={`/create-profile/${user.user._id}`}
-                        className="text-blue-600 hover:underline font-medium"
-                      >
-                        Create Profile
-                      </Link>
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                      <Link
-                        to={`/profile/${user.user._id}`}
-                        className="w-full sm:w-auto"
-                      >
-                        <button className="w-full px-6 py-2 bg-white border border-gray-300 text-gray-800 font-semibold rounded-lg shadow-sm hover:shadow-md transition duration-200">
-                          View Profile
-                        </button>
-                      </Link>
-
-                      <button
-                        onClick={handleLogOut}
-                        className="w-full sm:w-auto px-6 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-sm hover:bg-red-700 transition duration-200"
-                      >
-                        Log Out
+                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <Link to={`/profile/${user.user._id}`}>
+                      <button className="px-6 py-2 bg-gray-700 rounded-lg font-semibold shadow-md hover:bg-gray-600 transition duration-200 w-full sm:w-auto">
+                        View Profile
                       </button>
-                    </div>
+                    </Link>
+                    <button
+                      onClick={handleLogOut}
+                      className="px-6 py-2 bg-red-600 rounded-lg shadow-md font-semibold hover:bg-red-700 transition duration-200 w-full sm:w-auto"
+                    >
+                      Log Out
+                    </button>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        </>
-      ) : (
-        <>
+        ) : (
           <div className="p-8 max-w-2xl mx-auto">
-            <Card className="rounded-xl shadow-md border border-muted bg-background/50 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-                  Welcome 👋
-                </CardTitle>
-                <p className="text-muted-foreground text-sm">
-                  {isLoggedIn
-                    ? "Here's your personalized dashboard."
-                    : "This is the main page of the application."}
-                </p>
-              </CardHeader>
+            <div className="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-xl p-8 border border-gray-700">
+              <h2 className="text-3xl font-bold mb-2 text-gradient-to-r from-purple-400 via-pink-500 to-indigo-500">
+                Welcome 👋
+              </h2>
+              <p className="text-gray-400 mb-6">
+                {isLoggedIn
+                  ? "Here's your personalized dashboard."
+                  : "This is the main page of the application."}
+              </p>
 
-              <CardContent className="mt-4 space-y-4">
-                {isLoggedIn ? (
-                  <div className="space-y-1">
-                    <p className="text-lg font-medium">
-                      Logged in as:{" "}
-                      <span className="text-primary font-semibold">
-                        {user.user.username}
-                      </span>
-                    </p>
+              {isLoggedIn ? (
+                <p className="text-lg font-semibold mb-4">
+                  Logged in as:{" "}
+                  <span className="text-purple-400">{user.user.username}</span>
+                </p>
+              ) : (
+                <p className="text-gray-400 mb-4">
+                  You are not logged in. Please{" "}
+                  <Link className="text-purple-400 hover:underline" to="/login">
+                    log in
+                  </Link>
+                  .
+                </p>
+              )}
+
+              {userId && (
+                <>
+                  <p className="text-gray-400 mb-4">
+                    Don’t have a profile yet?{" "}
+                    <Link
+                      to={`/create-profile/${userId}`}
+                      className="text-purple-400 hover:underline font-semibold"
+                    >
+                      Create Profile
+                    </Link>
+                  </p>
+
+                  <div className="flex flex-col gap-3">
+                    <Link to={`/profile/${userId}`}>
+                      <button className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg shadow-md transition duration-200 font-semibold">
+                        View Profile
+                      </button>
+                    </Link>
+                    <button
+                      onClick={handleLogOut}
+                      className="w-full py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition duration-200 font-semibold"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Bottom list section */}
+              <div className="mt-10">
+                {recentJobs.length > 0 ? (
+                  <div>
+                    <h3 className="text-2xl font-semibold mb-4">Recent Jobs</h3>
+                    <ul className="space-y-2">
+                      {recentJobs.map((job) => (
+                        <li
+                          key={job?._id}
+                          className="bg-gray-700 rounded-lg p-4 shadow-md"
+                        >
+                          <h4 className="font-semibold">{job?.title}</h4>
+                          <p className="text-gray-400">{job?.companyName}</p>
+                          <p className="text-gray-400">{job?.location}</p>
+                          <p className="text-gray-400">
+                            {job?.experienceRequired}
+                          </p>
+                          <p className="text-gray-400">{job?.industry}</p>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      You are not logged in. Please{" "}
-                      <Link
-                        to="/login"
-                        className="text-blue-600 hover:underline"
-                      >
-                        log in
-                      </Link>
-                      .
-                    </p>
-                  </div>
+                  <p className="text-gray-400">No recent jobs found.</p>
                 )}
-
-                {userId && (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Don’t have a profile yet?{" "}
-                      <Link
-                        to={`/create-profile/${userId}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Create Profile
-                      </Link>
-                    </p>
-
-                    <div className="mt-6 space-y-3">
-                      <Link to={`/profile/${userId}`}>
-                        <Button variant="outline" className="w-full">
-                          View Profile
-                        </Button>
-                      </Link>
-
-                      <Button
-                        variant="destructive"
-                        className="w-full"
-                        onClick={handleLogOut}
-                      >
-                        Log Out
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </>
   );
 };

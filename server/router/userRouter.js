@@ -58,7 +58,7 @@ router.get(
   getAllApprovedStudentsByInstitutionAdmin
 );
 
-router.post(
+router.put(
   "/create-employee-details/:id",
   isAuthenticated,
   createEmployeeDetailsController
@@ -66,6 +66,6 @@ router.post(
 
 router.get("/get-employee/:id", isAuthenticated, getEmployeeDetailsController);
 
-router.post("/create-job-post", isAuthenticated, createJobPostController);
+router.post("/create-job-post/:id", isAuthenticated, createJobPostController);
 
 module.exports = router;

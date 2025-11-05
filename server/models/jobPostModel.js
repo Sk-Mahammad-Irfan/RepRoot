@@ -13,6 +13,11 @@ const jobPostSchema = new mongoose.Schema(
       trim: true,
       maxLength: 100,
     },
+    companyName: {
+      type: String,
+      trim: true,
+      maxLength: 100,
+    },
     description: {
       type: String,
       required: true,
@@ -25,16 +30,22 @@ const jobPostSchema = new mongoose.Schema(
       trim: true,
       maxLength: 200,
     },
+    employmentType: {
+      type: String,
+      enum: ["full-time", "part-time", "contract"],
+      required: true,
+    },
     experienceRequired: {
+      type: String,
+      enum: ["entry", "mid", "senior"],
+      required: true,
+    },
+
+    industry: {
       type: String,
       required: true,
       trim: true,
       maxLength: 100,
-    },
-    employmentType: {
-      type: String,
-      enum: ["permanent", "temporary", "contract"],
-      required: true,
     },
     salary: {
       type: String,

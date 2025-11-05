@@ -27,6 +27,7 @@ import EmployerLogin from "./pages/forEmployee/EmployerLogin";
 import EmployerHomePage from "./pages/forEmployee/EmployerHomePage";
 import EmployerDetailsPage from "./pages/forEmployee/EmployerDetailsPage";
 import EmployerJobPost from "./pages/forEmployee/EmployerJobPost";
+import EmployerJobDetails from "./pages/forEmployee/EmployerJobDetails";
 
 function App() {
   return (
@@ -45,7 +46,7 @@ function App() {
         <Route path="/employer/login" element={<EmployerLogin />} />
 
         {/* Protected routes wrapped inside PrivateRoutes */}
-        <Route element={<PrivateRoutes />}>
+        <Route path="/" element={<PrivateRoutes />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/create-profile/:id" element={<UserProfileForm />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
@@ -66,14 +67,12 @@ function App() {
           <Route path="approve-students" element={<MyStudents />} />
         </Route>
 
-        <Route element={<PrivateRoutes />}>
-          <Route path="/employee/home" element={<EmployerHomePage />} />
-          <Route
-            path="/employee/details/:id"
-            element={<EmployerDetailsPage />}
-          />
+        <Route path="/employee" element={<PrivateRoutes />}>
+          <Route path="home" element={<EmployerHomePage />} />
+          <Route path="details/:id" element={<EmployerDetailsPage />} />
+          <Route path="post-job/:id" element={<EmployerJobPost />} />
+          <Route path="job/:id" element={<EmployerJobDetails />} />
         </Route>
-        <Route path="/employee/post-job" element={<EmployerJobPost />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 
 const EmployerDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: "",
     description: "",
@@ -36,7 +37,7 @@ const EmployerDetailsPage = () => {
         toast.error("No auth token found.");
         return;
       }
-      const res = await axios.post(
+      const res = await axios.put(
         `${
           import.meta.env.VITE_API_URL
         }/api/users/create-employee-details/${id}`,
@@ -48,6 +49,7 @@ const EmployerDetailsPage = () => {
         }
       );
       toast.success(res?.data?.message);
+      navigate(`/employee/home`);
     } catch (error) {
       toast.error(error?.response?.data?.message);
     }
@@ -97,7 +99,6 @@ const EmployerDetailsPage = () => {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Company Name */}
             <div className="grid gap-2">
               <Label htmlFor="companyName">Company Name</Label>
               <Input
@@ -109,7 +110,6 @@ const EmployerDetailsPage = () => {
               />
             </div>
 
-            {/* Description */}
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -122,7 +122,6 @@ const EmployerDetailsPage = () => {
               />
             </div>
 
-            {/* Other Information */}
             <div className="grid gap-2">
               <Label htmlFor="others">Other Information</Label>
               <Textarea

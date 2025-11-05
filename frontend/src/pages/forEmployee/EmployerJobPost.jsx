@@ -11,8 +11,13 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
 const EmployerJobPost = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     jobTitle: "",
     jobDescription: "",
@@ -23,14 +28,60 @@ const EmployerJobPost = () => {
     skills: "",
     applicationDeadline: "",
     educationLevel: "",
-    experienceRequired: "",
-    employmentType: "",
     salary: "",
   });
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
+
+  const onChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // console.log("Form Data Submitted: ", formData);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/create-job-post/${id}`,
+        {
+          title: formData.jobTitle,
+          description: formData.jobDescription,
+          location: formData.location,
+          employmentType: formData.jobType,
+          experienceLevel: formData.experienceLevel,
+          industry: formData.industry,
+          requiredSkills: formData.skills
+            .split(",")
+            .map((skill) => skill.trim()),
+          applicationDeadline: formData.applicationDeadline,
+          educationLevel: formData.educationLevel,
+          salary: formData.salary,
+        }
+      );
+      if (response?.data?.success) {
+        toast.success("Job posted successfully!");
+      } else {
+        toast.error("Failed to post job. Please try again.");
+      }
+      console.log(response);
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+      // console.error("Job Post Error: ", error?.response?.data?.message);
+    }
+
+    setFormData({
+      jobTitle: "",
+      jobDescription: "",
+      location: "",
+      jobType: "",
+      experienceLevel: "",
+      industry: "",
+      skills: "",
+      applicationDeadline: "",
+      educationLevel: "",
+      salary: "",
+    });
+    navigate("/employee/home");
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4 py-10">
       <Card className="w-full max-w-2xl shadow-lg">
@@ -42,44 +93,52 @@ const EmployerJobPost = () => {
 
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Job Title */}
             <div className="space-y-2">
               <Label htmlFor="jobTitle">Job Title</Label>
               <Input
                 id="jobTitle"
                 name="jobTitle"
+                value={formData.jobTitle}
+                onChange={onChange}
                 required
                 placeholder="e.g., Software Engineer"
               />
             </div>
 
-            {/* Job Description */}
             <div className="space-y-2">
               <Label htmlFor="jobDescription">Job Description</Label>
               <Textarea
                 id="jobDescription"
                 name="jobDescription"
+                value={formData.jobDescription}
+                onChange={onChange}
                 required
                 placeholder="Describe the role and expectations..."
               />
             </div>
 
-            {/* Location */}
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
                 name="location"
+                value={formData.location}
+                onChange={onChange}
                 required
                 placeholder="e.g., New York, Remote"
               />
             </div>
 
-            {/* Job Type & Experience Level */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="jobType">Job Type</Label>
-                <Select name="jobType" required>
+                <Select
+                  value={formData.jobType}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, jobType: value })
+                  }
+                  required
+                >
                   <SelectTrigger id="jobType">
                     <SelectValue placeholder="Select job type" />
                   </SelectTrigger>
@@ -93,7 +152,13 @@ const EmployerJobPost = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="experienceLevel">Experience Level</Label>
-                <Select name="experienceLevel" required>
+                <Select
+                  value={formData.experienceLevel}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, experienceLevel: value })
+                  }
+                  required
+                >
                   <SelectTrigger id="experienceLevel">
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
@@ -106,13 +171,14 @@ const EmployerJobPost = () => {
               </div>
             </div>
 
-            {/* Industry & Skills */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="industry">Industry</Label>
                 <Input
                   id="industry"
                   name="industry"
+                  value={formData.industry}
+                  onChange={onChange}
                   required
                   placeholder="e.g., Tech, Finance"
                 />
@@ -123,27 +189,35 @@ const EmployerJobPost = () => {
                 <Input
                   id="skills"
                   name="skills"
+                  value={formData.skills}
+                  onChange={onChange}
                   required
                   placeholder="e.g., React, Node.js, SQL"
                 />
               </div>
             </div>
 
-            {/* Application Deadline */}
             <div className="space-y-2">
               <Label htmlFor="applicationDeadline">Application Deadline</Label>
               <Input
                 type="date"
                 id="applicationDeadline"
                 name="applicationDeadline"
+                value={formData.applicationDeadline}
+                onChange={onChange}
                 required
               />
             </div>
 
-            {/* Education Level */}
             <div className="space-y-2">
               <Label htmlFor="educationLevel">Education Level</Label>
-              <Select name="educationLevel" required>
+              <Select
+                value={formData.educationLevel}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, educationLevel: value })
+                }
+                required
+              >
                 <SelectTrigger id="educationLevel">
                   <SelectValue placeholder="Select education level" />
                 </SelectTrigger>
@@ -156,45 +230,18 @@ const EmployerJobPost = () => {
               </Select>
             </div>
 
-            {/* Experience & Employment Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="experienceRequired">Experience Required</Label>
-                <Input
-                  id="experienceRequired"
-                  name="experienceRequired"
-                  required
-                  placeholder="e.g., 3+ years"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="employmentType">Employment Type</Label>
-                <Select name="employmentType" required>
-                  <SelectTrigger id="employmentType">
-                    <SelectValue placeholder="Select employment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="permanent">Permanent</SelectItem>
-                    <SelectItem value="temporary">Temporary</SelectItem>
-                    <SelectItem value="contract">Contract</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Salary */}
             <div className="space-y-2">
               <Label htmlFor="salary">Salary</Label>
               <Input
                 id="salary"
                 name="salary"
+                value={formData.salary}
+                onChange={onChange}
                 required
                 placeholder="e.g., $80,000 - $100,000"
               />
             </div>
 
-            {/* Submit */}
             <div className="pt-4">
               <Button type="submit" className="w-full">
                 Submit Job Post
