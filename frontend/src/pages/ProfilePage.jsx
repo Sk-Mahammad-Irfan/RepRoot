@@ -1,16 +1,26 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/auth";
 import { toast } from "react-hot-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
+  const [education, setEducation] = useState([]);
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const [auth] = useAuth();
-  const [education, setEducation] = useState([]);
 
   const getToken = () =>
     auth?.token || JSON.parse(localStorage.getItem("auth") || "{}")?.token;
@@ -47,95 +57,147 @@ const ProfilePage = () => {
   }, [auth?.token, id]);
 
   useEffect(() => {
-    setEducation(user?.userDetails?.education);
+    setEducation(user?.userDetails?.education || []);
   }, [user?.userDetails?.education]);
+
   // console.log(education);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-xl space-y-8">
-      <h1 className="text-4xl font-bold text-center text-indigo-900 mb-8">
-        User Profile
-      </h1>
-
-      <p className="text-center text-gray-600 mb-6">
-        View and edit your profile details below.
-      </p>
-
-      {loading ? (
-        <div className="text-center text-gray-500 text-lg">Loading...</div>
-      ) : user ? (
-        <>
-          <Card className="mb-8 bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="p-4 border-b border-gray-200">
-              <h2 className="text-2xl font-semibold text-indigo-800">
-                {user.user.username}
-              </h2>
-            </CardHeader>
-            <CardContent className="p-4">
-              <p className="text-lg text-gray-700">
-                <span className="font-semibold">Institute:</span>{" "}
-                <span className="text-gray-500">{user.user.institute}</span>
-              </p>
-              <p className="text-lg text-gray-700">
-                <span className="font-semibold">Email:</span>{" "}
-                <span className="text-gray-500">{user.user.email}</span>
-              </p>
-              <p className="text-lg text-gray-700">
-                <span className="font-semibold">Username:</span>{" "}
-                <span className="text-gray-500">{user.user.username}</span>
-              </p>
-
-              <h3 className="text-xl font-semibold mt-6 text-indigo-800">
-                User Details
-              </h3>
-              <p className="text-lg text-gray-700 mt-2">
-                <span className="font-semibold">User Bio:</span>{" "}
-                <span className="text-gray-500">
-                  {user?.userDetails?.userBio}
-                </span>
-              </p>
-              <p className="text-lg text-gray-700 mt-2">
-                <span className="font-semibold">User Location:</span>{" "}
-                <span className="text-gray-500">
-                  {user?.userDetails?.userLocation}
-                </span>
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="mt-8">
-            <h3 className="text-2xl font-semibold text-indigo-900 mb-6">
-              Education
-            </h3>
-            {education?.length ? (
-              education?.map((edu) => (
-                <Card
-                  key={edu._id}
-                  className="mb-6 bg-white shadow-md rounded-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <CardHeader className="p-4 border-b border-gray-200">
-                    <h4 className="text-lg font-semibold text-indigo-700">
-                      {edu.institutionName}
-                    </h4>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <p className="text-gray-600">
-                      <span className="font-semibold">Location:</span>{" "}
-                      {edu.institutionLocation}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <p className="text-lg text-gray-500">
-                No education history found.
-              </p>
-            )}
+    <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-black text-zinc-100 px-4 sm:px-6 py-12">
+      <div className="max-w-5xl mx-auto space-y-10">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <h1 className="text-4xl font-bold tracking-tight text-white">
+              User Profile
+            </h1>
+            <p className="text-zinc-400 mt-1">
+              View and manage your personal information.
+            </p>
           </div>
-        </>
-      ) : (
-        <p className="text-center text-gray-600 text-lg">No user found.</p>
-      )}
+
+          {user && (
+            <Link to={`/create-profile/${user?.user?._id}`}>
+              <Button
+                variant="outline"
+                className="border-zinc-700 text-black hover:bg-zinc-800 hover:text-white transition"
+              >
+                Edit / Create Profile
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <div className="space-y-6">
+            <Skeleton className="h-48 w-full bg-zinc-800" />
+            <Skeleton className="h-20 w-full bg-zinc-800" />
+            <Skeleton className="h-20 w-full bg-zinc-800" />
+          </div>
+        ) : user ? (
+          <>
+            {/* User Info */}
+            <Card className="bg-zinc-900/80 border border-zinc-800 shadow-xl backdrop-blur-sm hover:border-zinc-700 transition-all">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <Avatar className="h-24 w-24 border border-zinc-700">
+                  <AvatarImage
+                    src={user?.user?.profile_img}
+                    alt={user?.user?.username}
+                  />
+                  <AvatarFallback className="bg-zinc-800 text-zinc-300">
+                    {user?.user?.username?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div>
+                  <CardTitle className="text-2xl font-semibold text-white">
+                    {user.user.username}
+                  </CardTitle>
+                  <CardDescription className="text-zinc-400">
+                    {user.user.email}
+                  </CardDescription>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4 text-zinc-300">
+                <p>
+                  <span className="font-medium text-zinc-400">Institute:</span>{" "}
+                  {user.user.institute || "N/A"}
+                </p>
+                <p>
+                  <span className="font-medium text-zinc-400">Username:</span>{" "}
+                  {user.user.username}
+                </p>
+
+                <Separator className="my-6 bg-zinc-800" />
+
+                <h3 className="text-xl font-semibold text-white">
+                  User Details
+                </h3>
+
+                <p>
+                  <span className="font-medium text-zinc-400">Bio:</span>{" "}
+                  {user?.userDetails?.userBio || "No bio provided."}
+                </p>
+                <p>
+                  <span className="font-medium text-zinc-400">Location:</span>{" "}
+                  {user?.userDetails?.userLocation || "Unknown"}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Education Section */}
+            <div className="mt-10 space-y-6">
+              <h3 className="text-2xl font-bold text-white border-l-4 border-zinc-700 pl-3">
+                Education
+              </h3>
+
+              {education?.length ? (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {education.map((edu) => (
+                    <Card
+                      key={edu._id}
+                      className="bg-zinc-900/80 border border-zinc-800 hover:bg-zinc-800/80 hover:border-zinc-700 transition-all duration-300 shadow-lg"
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-white">
+                          {edu.institutionName}
+                        </CardTitle>
+                        <CardDescription className="text-zinc-400">
+                          {edu.degree || "Degree not specified"}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <p className="text-white">
+                          <span className="font-medium text-zinc-400">
+                            Location:
+                          </span>{" "}
+                          {edu.institutionLocation || "Unknown"}
+                        </p>
+                        {edu.startYear && (
+                          <p className="text-white">
+                            <span className="font-medium text-zinc-400">
+                              Year:
+                            </span>{" "}
+                            {edu.endYear}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-zinc-500 text-lg">
+                  No education history found.
+                </p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-zinc-500 text-lg">No user found.</p>
+        )}
+      </div>
     </div>
   );
 };

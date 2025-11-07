@@ -49,6 +49,7 @@ exports.getSingleUserController = async (req, res) => {
         email: user.email,
         role: user.role,
         institute: user.institution?.name || null,
+        profile_img: user.profile_img,
       },
       userDetails,
     });

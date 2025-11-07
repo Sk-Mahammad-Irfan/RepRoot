@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
       required: false,
     },
     googleId: { type: String },
+    profile_img: { type: String, default: null },
   },
   { timestamps: true }
 );

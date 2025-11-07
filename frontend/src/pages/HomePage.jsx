@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-
 import toast from "react-hot-toast";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Briefcase, LogOut, User, Building2 } from "lucide-react";
 
 const HomePage = () => {
   const [user, setUser] = useState(null);
@@ -12,318 +24,229 @@ const HomePage = () => {
 
   useEffect(() => {
     const storedAuth = localStorage.getItem("auth");
-    if (storedAuth) {
-      const parsedAuth = JSON.parse(storedAuth);
+    if (!storedAuth) return setLoading(false);
 
-      // If username exists, use it directly
-      if (parsedAuth?.user?.username) {
-        setUser(parsedAuth);
-        setLoading(false);
-      } else if (parsedAuth?.user?._id) {
-        const controller = new AbortController();
+    const parsedAuth = JSON.parse(storedAuth);
 
-        const fetchUser = async () => {
-          try {
-            const response = await axios.get(
-              `${import.meta.env.VITE_API_URL}/api/users/get-user/${
-                parsedAuth.user._id
-              }`,
-              { withCredentials: true, signal: controller.signal }
-            );
-            setUser(response.data);
-          } catch (error) {
-            if (!axios.isCancel(error)) {
-              toast.error("Error fetching user");
-              console.error("Error fetching user:", error);
-            }
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        fetchUser();
-
-        return () => {
-          controller.abort();
-        };
-      } else {
-        setLoading(false);
-      }
-    } else {
+    if (parsedAuth?.user?.username) {
+      setUser(parsedAuth);
       setLoading(false);
+      return;
     }
+
+    if (parsedAuth?.user?._id) {
+      const controller = new AbortController();
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/users/get-user/${
+              parsedAuth.user._id
+            }`,
+            { withCredentials: true, signal: controller.signal }
+          );
+          setUser(res.data);
+        } catch (err) {
+          if (!axios.isCancel(err)) {
+            toast.error("Error fetching user");
+            console.error(err);
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUser();
+      return () => controller.abort();
+    }
+
+    setLoading(false);
   }, []);
 
   useEffect(() => {
     const token = JSON.parse(localStorage.getItem("auth") || "{}")?.token;
-    if (!token) {
-      return;
-    }
-    if (user?.user?.role === "student") {
+    if (!token || user?.user?.role !== "student") return;
+
+    const fetchRecentJobs = async () => {
       try {
-        const fetchRecentJobs = async () => {
-          const res = await axios.get(
-            `${import.meta.env.VITE_API_URL}/api/jobs/get-jobs`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          console.log(res?.data);
-          if (res?.data?.success) {
-            setRecentJobs(res.data.jobPosts);
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/jobs/get-jobs`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-        };
-        fetchRecentJobs();
+        );
+        if (res?.data?.success) setRecentJobs(res.data.jobPosts);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
-    } else {
-      return;
-    }
+    };
+    fetchRecentJobs();
   }, [user?.user?.role]);
 
   const handleLogOut = () => {
-    try {
-      localStorage.removeItem("auth");
-      setUser(null);
-      toast.success("Logout successfully");
-      navigate("/login");
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    localStorage.removeItem("auth");
+    setUser(null);
+    toast.success("Logout successful");
+    navigate("/login");
+    window.location.reload();
   };
+
+  const isLoggedIn = !!user?.user?.username;
+  const userId = user?.user?._id;
+  const role = user?.user?.role;
 
   if (loading) {
     return (
-      <div className="p-6 max-w-xl mx-auto">
-        <p>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <Skeleton className="h-32 w-64 rounded-lg" />
       </div>
     );
   }
 
-  // console.log(user);
-  const isLoggedIn = !!user?.user?.username;
-  const userId = user?.user?._id;
+  const Navbar = () => (
+    <nav className="w-full bg-gray-900 border-b border-gray-800 py-4 px-6 flex justify-between items-center">
+      <Link to="/" className="text-xl font-semibold text-purple-400">
+        CareerConnect
+      </Link>
+      {isLoggedIn && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 focus:outline-none">
+              <Avatar className="h-9 w-9 border border-gray-700">
+                <AvatarImage
+                  src={
+                    user?.user?.profile_img || "https://github.com/shadcn.png"
+                  }
+                  alt={user?.user?.username}
+                />
+                <AvatarFallback>
+                  {user?.user?.username?.charAt(0)?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-gray-200 font-medium hidden sm:block">
+                {user?.user?.username}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-40 bg-gray-900 border-gray-800 text-gray-200"
+          >
+            <DropdownMenuLabel className="text-gray-400 text-sm">
+              Account
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigate(`/profile/${userId}`)}
+              className="cursor-pointer hover:bg-gray-800"
+            >
+              <User size={16} className="mr-2" /> Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleLogOut}
+              className="cursor-pointer hover:bg-gray-800 text-red-400"
+            >
+              <LogOut size={16} className="mr-2" /> Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </nav>
+  );
+
+  const Header = ({ title, subtitle }) => (
+    <div className="mb-8 text-center">
+      <h1 className="text-3xl font-bold text-white mb-1">{title}</h1>
+      {subtitle && <p className="text-gray-400">{subtitle}</p>}
+    </div>
+  );
+
   return (
-    <>
-      <div className="min-h-screen bg-gray-900 text-gray-100">
-        {user?.user?.role === "super_admin" ? (
-          <div className="max-w-4xl mx-auto p-6">
-            {/* Super Admin Header */}
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-bold text-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-                Super Admin Dashboard
-              </h1>
-              <Link
-                to="/admin/dashboard"
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-lg transition duration-200"
-              >
-                GO SUPER ADMIN
+    <main className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+      <Navbar />
+
+      <div className="flex-1 flex justify-center py-10 px-6">
+        <Card className="bg-gray-900 border-gray-800 w-full max-w-3xl p-8">
+          <CardHeader>
+            <CardTitle>
+              <Header
+                title={
+                  isLoggedIn
+                    ? `Welcome back, ${user?.user?.username} 👋`
+                    : "Welcome to CareerConnect"
+                }
+                subtitle={
+                  isLoggedIn
+                    ? "Here's your personalized dashboard."
+                    : "Please log in to access more features."
+                }
+              />
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            {/* Profile Image */}
+            {/* {user?.user?.profile_img && (
+              <img
+                src={user.user.profile_img}
+                alt="Profile"
+                className="w-24 h-24 rounded-full mx-auto mb-6 border border-gray-700 object-cover"
+              />
+            )} */}
+
+            {/* Role-specific section */}
+            {role === "super_admin" && (
+              <Link to="/admin/dashboard">
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Go to Admin Dashboard
+                </Button>
               </Link>
-            </div>
+            )}
 
-            {/* Main Card */}
-            <div className="bg-gray-800 rounded-xl shadow-xl p-8 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-semibold mb-2">
-                Welcome to the Home Page
-              </h2>
-              <p className="text-gray-400 mb-6">
-                This is the main page of the application.
-              </p>
+            {role === "institution_admin" && (
+              <Link to="/institute/dashboard">
+                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  Go to Institute Dashboard
+                </Button>
+              </Link>
+            )}
 
-              {user?.user?.username ? (
-                <p className="text-lg font-semibold mb-4">
-                  Logged in as:{" "}
-                  <span className="text-purple-400">{user.user.username}</span>
-                </p>
-              ) : (
-                <p className="text-gray-500 mb-4">
-                  You are not logged in. Please{" "}
-                  <Link className="text-purple-400 hover:underline" to="/login">
-                    log in
-                  </Link>
-                  .
-                </p>
-              )}
-
-              {user?.user?._id && (
-                <>
-                  <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                    <Link to={`/profile/${user.user._id}`} className="flex-1">
-                      <button className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg shadow-md transition duration-200 font-semibold">
-                        Go to Profile
-                      </button>
-                    </Link>
-                    <button
-                      onClick={handleLogOut}
-                      className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition duration-200 font-semibold"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                  <p className="text-gray-400">
-                    Don’t have a profile yet?{" "}
-                    <Link
-                      to={`/create-profile/${user.user._id}`}
-                      className="text-purple-400 hover:underline font-semibold"
-                    >
-                      Create Profile
-                    </Link>
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        ) : user?.user?.role === "institution_admin" ? (
-          <div className="min-h-screen flex items-center justify-center bg-gray-900">
-            <div className="relative bg-gray-800/90 backdrop-blur-lg shadow-2xl rounded-xl max-w-3xl w-full p-10 border border-gray-700">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-700/30 to-blue-900/50 rounded-xl"></div>
-
-              <div className="relative z-10 text-center">
-                <div className="flex justify-between items-center mb-6">
-                  <h1 className="text-3xl font-bold text-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-                    Institute Admin Portal
-                  </h1>
-                  <Link
-                    to="/institute/dashboard"
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-lg transition duration-200"
-                  >
-                    GO INSTITUTE ADMIN
-                  </Link>
-                </div>
-
-                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-400">
-                  Welcome to the Institute Portal
-                </h1>
-                <p className="text-gray-300 mb-6">
-                  Centralized dashboard for users and administrators
-                </p>
-
-                {user?.user?.username ? (
-                  <p className="text-lg font-medium mb-6">
-                    Logged in as:{" "}
-                    <span className="text-purple-400 font-semibold">
-                      {user.user.username}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-gray-400 mb-6">
-                    You are not logged in. Please{" "}
-                    <Link
-                      className="text-purple-400 hover:underline font-semibold"
-                      to="/login"
-                    >
-                      log in
-                    </Link>
-                    .
-                  </p>
-                )}
-
-                {user?.user?._id && (
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Link to={`/profile/${user.user._id}`}>
-                      <button className="px-6 py-2 bg-gray-700 rounded-lg font-semibold shadow-md hover:bg-gray-600 transition duration-200 w-full sm:w-auto">
-                        View Profile
-                      </button>
-                    </Link>
-                    <button
-                      onClick={handleLogOut}
-                      className="px-6 py-2 bg-red-600 rounded-lg shadow-md font-semibold hover:bg-red-700 transition duration-200 w-full sm:w-auto"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-8 max-w-2xl mx-auto">
-            <div className="bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-xl p-8 border border-gray-700">
-              <h2 className="text-3xl font-bold mb-2 text-gradient-to-r from-purple-400 via-pink-500 to-indigo-500">
-                Welcome 👋
-              </h2>
-              <p className="text-gray-400 mb-6">
-                {isLoggedIn
-                  ? "Here's your personalized dashboard."
-                  : "This is the main page of the application."}
-              </p>
-
-              {isLoggedIn ? (
-                <p className="text-lg font-semibold mb-4">
-                  Logged in as:{" "}
-                  <span className="text-purple-400">{user.user.username}</span>
-                </p>
-              ) : (
-                <p className="text-gray-400 mb-4">
-                  You are not logged in. Please{" "}
-                  <Link className="text-purple-400 hover:underline" to="/login">
-                    log in
-                  </Link>
-                  .
-                </p>
-              )}
-
-              {userId && (
-                <>
-                  <p className="text-gray-400 mb-4">
-                    Don’t have a profile yet?{" "}
-                    <Link
-                      to={`/create-profile/${userId}`}
-                      className="text-purple-400 hover:underline font-semibold"
-                    >
-                      Create Profile
-                    </Link>
-                  </p>
-
-                  <div className="flex flex-col gap-3">
-                    <Link to={`/profile/${userId}`}>
-                      <button className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg shadow-md transition duration-200 font-semibold">
-                        View Profile
-                      </button>
-                    </Link>
-                    <button
-                      onClick={handleLogOut}
-                      className="w-full py-2 bg-red-600 hover:bg-red-700 rounded-lg shadow-md transition duration-200 font-semibold"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Bottom list section */}
-              <div className="mt-10">
-                {recentJobs.length > 0 ? (
-                  <div>
-                    <h3 className="text-2xl font-semibold mb-4">Recent Jobs</h3>
-                    <ul className="space-y-2">
+            {/* Student Recent Jobs */}
+            {role === "student" && (
+              <>
+                <Separator className="my-8 bg-gray-700" />
+                <section>
+                  <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-white">
+                    <Briefcase size={20} /> Recent Jobs
+                  </h3>
+                  {recentJobs.length > 0 ? (
+                    <ul className="space-y-3">
                       {recentJobs.map((job) => (
                         <li
-                          key={job?._id}
-                          className="bg-gray-700 rounded-lg p-4 shadow-md"
+                          key={job._id}
+                          className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition"
                         >
-                          <h4 className="font-semibold">{job?.title}</h4>
-                          <p className="text-gray-400">{job?.companyName}</p>
-                          <p className="text-gray-400">{job?.location}</p>
-                          <p className="text-gray-400">
-                            {job?.experienceRequired}
-                          </p>
-                          <p className="text-gray-400">{job?.industry}</p>
+                          <h4 className="font-semibold text-white">
+                            {job.title}
+                          </h4>
+                          <p className="text-gray-400">{job.companyName}</p>
+                          <p className="text-gray-500">{job.location}</p>
+                          <Link
+                            to={`/jobs/${job._id}`}
+                            className="text-purple-400 text-sm hover:underline"
+                          >
+                            View Details
+                          </Link>
                         </li>
                       ))}
                     </ul>
-                  </div>
-                ) : (
-                  <p className="text-gray-400">No recent jobs found.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+                  ) : (
+                    <p className="text-gray-500">No recent jobs found.</p>
+                  )}
+                </section>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </>
+    </main>
   );
 };
 

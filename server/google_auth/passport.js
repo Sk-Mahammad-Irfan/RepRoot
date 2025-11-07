@@ -14,7 +14,9 @@ module.exports = function (passport) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          // console.log(profile);
           const email = profile.emails[0].value;
+          const profile_img = profile.photos[0].value;
 
           let user = await User.findOne({ email });
 
@@ -22,8 +24,9 @@ module.exports = function (passport) {
             if (!user.googleId) {
               user.googleId = profile.id;
               user.isVerified = true;
-              await user.save();
             }
+            user.profile_img = profile_img;
+            await user.save();
           } else {
             user = await new User({
               username: profile.displayName,
@@ -31,6 +34,7 @@ module.exports = function (passport) {
               role: "student",
               googleId: profile.id,
               isVerified: true,
+              profile_img,
             }).save();
 
             // Sending welcome email
