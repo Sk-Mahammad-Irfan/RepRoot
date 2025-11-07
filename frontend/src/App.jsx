@@ -50,6 +50,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/create-profile/:id" element={<UserProfileForm />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/jobs/:id" element={<EmployerJobDetails />} />
         </Route>
 
         {/* Admin routes wrapped inside AdminRoute */}

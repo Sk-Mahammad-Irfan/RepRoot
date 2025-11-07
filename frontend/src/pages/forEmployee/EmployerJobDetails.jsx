@@ -1,6 +1,16 @@
-import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const EmployerJobDetails = () => {
   const [jobs, setJobs] = useState([]);
@@ -36,75 +46,98 @@ const EmployerJobDetails = () => {
 
     getJobDetails();
   }, [id]);
-  console.log(jobs);
 
-  if (loading) return <p>Loading job details...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading)
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-semibold mb-4">Loading job details...</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-md" />
+          ))}
+        </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Job Details</h1>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Job Details</h1>
+
       {jobs.length > 0 ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "1rem",
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
-            <div
-              key={job._id}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "1rem",
-                backgroundColor: "#fafafa",
-              }}
-            >
-              <h1>Company: {job.companyName}</h1>
-              <h2>Title: {job.title}</h2>
-              <p>
-                <strong>Description:</strong> {job.description}
-              </p>
-              <p>
-                <strong>Location:</strong> {job.location}
-              </p>
-              <p>
-                <strong>Salary:</strong> {job.salary}
-              </p>
-              <p>
-                <strong>Industry:</strong> {job.industry}
-              </p>
-              <p>
-                <strong>Employment Type:</strong> {job.employmentType}
-              </p>
-              <p>
-                <strong>Experience Required:</strong> {job.experienceRequired}
-              </p>
-              <p>
-                <strong>Education Level:</strong> {job.educationLevel}
-              </p>
-              <p>
-                <strong>Application Deadline:</strong>{" "}
-                {new Date(job.applicationDeadline).toLocaleDateString()}
-              </p>
-              <div>
-                <strong>Required Skills:</strong>
-                <ul>
-                  {job.requiredSkills?.map((skill, index) => (
-                    <li key={index}>{skill}</li>
-                  ))}
-                </ul>
-              </div>
-              <p>
-                <em>Posted on: {new Date(job.createdAt).toLocaleString()}</em>
-              </p>
-            </div>
+            <Card key={job._id} className="hover:shadow-lg transition-all">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold">
+                  {job.title}
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  {job.companyName}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-gray-700">
+                <p>
+                  <strong>Description:</strong> {job.description}
+                </p>
+                <p>
+                  <strong>Location:</strong> {job.location}
+                </p>
+                <p>
+                  <strong>Salary:</strong> {job.salary}
+                </p>
+                <p>
+                  <strong>Industry:</strong> {job.industry}
+                </p>
+                <p>
+                  <strong>Employment Type:</strong> {job.employmentType}
+                </p>
+                <p>
+                  <strong>Experience Required:</strong> {job.experienceRequired}
+                </p>
+                <p>
+                  <strong>Education Level:</strong> {job.educationLevel}
+                </p>
+                <p>
+                  <strong>Application Deadline:</strong>{" "}
+                  {new Date(job.applicationDeadline).toLocaleDateString()}
+                </p>
+
+                <div>
+                  <strong>Required Skills:</strong>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {job.requiredSkills?.length > 0 ? (
+                      job.requiredSkills.map((skill, i) => (
+                        <Badge key={i} variant="secondary">
+                          {skill}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-500">None listed</span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-4">
+                  <em>Posted on: {new Date(job.createdAt).toLocaleString()}</em>
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : (
-        <p>No job details available.</p>
+        <p className="text-gray-600 text-center mt-8">
+          No job details available.
+        </p>
       )}
     </div>
   );
