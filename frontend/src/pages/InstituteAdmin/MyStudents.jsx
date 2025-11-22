@@ -26,7 +26,8 @@ const MyStudents = () => {
         // console.log(res);
         setStudents(res?.data?.users);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
+        toast.error(error.respose.data.message);
       }
     };
     if (authToken) {
@@ -43,7 +44,7 @@ const MyStudents = () => {
     }
   }, []);
 
-  console.log(students);
+  // console.log(students);
   return (
     <>
       <Link to="/">Go Home</Link>

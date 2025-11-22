@@ -32,12 +32,12 @@ const jobPostSchema = new mongoose.Schema(
     },
     employmentType: {
       type: String,
-      enum: ["full-time", "part-time", "contract"],
+      enum: ["Full-time", "Part-time", "Contract"],
       required: true,
     },
     experienceRequired: {
       type: String,
-      enum: ["entry", "mid", "senior"],
+      enum: ["Entry Level", "Mid Level", "Senior Level"],
       required: true,
     },
 
@@ -63,8 +63,10 @@ const jobPostSchema = new mongoose.Schema(
     },
     educationLevel: {
       type: String,
-      enum: ["high-school", "associate", "bachelor", "master"],
       required: true,
+    },
+    appliedCandidates: {
+      type: [String],
     },
   },
   { timestamps: true }

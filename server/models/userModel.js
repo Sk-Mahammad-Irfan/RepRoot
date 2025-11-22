@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema(
       default: "student",
       required: true,
     },
+
     approvalStatus: {
       type: String,
       enum: ["pending", "approved", "rejected"],

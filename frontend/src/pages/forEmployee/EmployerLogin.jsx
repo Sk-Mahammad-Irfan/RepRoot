@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useAuth } from "../../context/auth";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const EmployerLogin = () => {
   const navigate = useNavigate();
@@ -46,15 +47,16 @@ const EmployerLogin = () => {
         // console.log(response);
         setAuth({
           ...auth,
-          user: response?.data?.employee,
+          user: response?.data?.user,
           token: response?.data?.token,
         });
         localStorage.setItem("auth", JSON.stringify(response.data));
         navigate("/employee/home");
+        toast.success("Login successfull");
       } else if (response?.data?.redirect === "not-approved") {
         navigate("/not-approved");
       } else {
-        console.log("Something went wrong");
+        toast.error("Something went wrong");
       }
       setFormData({ email: "", password: "" });
     } catch (error) {

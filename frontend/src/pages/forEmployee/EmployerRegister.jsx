@@ -56,7 +56,7 @@ const EmployerRegister = () => {
       navigate("/employer/login");
     } catch (error) {
       alert(error?.response?.data?.message || "Registration Failed");
-      console.log("error", error);
+      // console.log("error", error);
     }
   };
 
@@ -73,7 +73,6 @@ const EmployerRegister = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-gray-700">
               Full Name
@@ -92,7 +91,6 @@ const EmployerRegister = () => {
             />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-gray-700">
               Work Email
@@ -108,7 +106,6 @@ const EmployerRegister = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="password" className="text-gray-700">
               Password
@@ -127,7 +124,6 @@ const EmployerRegister = () => {
             </p>
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200"
@@ -136,7 +132,6 @@ const EmployerRegister = () => {
           </Button>
         </form>
 
-        {/* Links */}
         <div className="mt-8 text-center space-y-2">
           <p className="text-sm text-gray-600">
             Want to find a job instead?{" "}

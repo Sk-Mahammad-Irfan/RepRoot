@@ -20,7 +20,6 @@ const OAuthCallback = () => {
 
         navigate("/");
       } catch (err) {
-        console.error("Error parsing user from query string:", err);
         navigate("/login");
       }
     } else {

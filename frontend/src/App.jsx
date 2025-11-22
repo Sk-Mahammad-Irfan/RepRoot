@@ -7,14 +7,17 @@ import ChangePassword from "./pages/Auth/ChangePassword";
 import PrivateRoutes from "./Routes/private";
 import AdminRoute from "./Routes/AdminRoute";
 import HomePage from "./pages/HomePage";
+import JobDetails from "./pages/jobDetails";
 import VerifyEmail from "./pages/VerifyEmail";
 import Verify from "./pages/Verify";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import NotApproved from "./pages/NotApproved";
 import UserProfileForm from "./pages/userDetails/UserProfileForm";
+import ProfileDetailsPage from "./pages/userDetails/ProfileDetailsPage";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminEmployees from "./pages/Admin/AdminEmployees";
 import AdminInstitution from "./pages/Admin/AdminInstitution";
 import ApproveInstitute from "./pages/Admin/ApproveInstitute";
 import OAuthCallback from "./pages/OAuthCallback";
@@ -44,19 +47,21 @@ function App() {
         <Route path="/change-password/:email" element={<ChangePassword />} />
         <Route path="/employer/register" element={<EmployerRegister />} />
         <Route path="/employer/login" element={<EmployerLogin />} />
+        <Route path="/profile/:id" element={<ProfileDetailsPage />} />
 
         {/* Protected routes wrapped inside PrivateRoutes */}
         <Route path="/" element={<PrivateRoutes />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/create-profile/:id" element={<UserProfileForm />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
-          <Route path="/jobs/:id" element={<EmployerJobDetails />} />
+          <Route path="/job/:id" element={<JobDetails />} />
         </Route>
 
         {/* Admin routes wrapped inside AdminRoute */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="all-users" element={<AdminUsers />} />
+          <Route path="all-employees" element={<AdminEmployees />} />
           <Route path="all-instituteAdmin" element={<AdminInstitution />} />
           <Route path="approve-instituteAdmin" element={<ApproveInstitute />} />
         </Route>

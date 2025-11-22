@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,14 +15,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
 
 const EmployerJobPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     jobTitle: "",
     jobDescription: "",
@@ -28,58 +30,68 @@ const EmployerJobPost = () => {
     skills: "",
     applicationDeadline: "",
     educationLevel: "",
+    customEducationLevel: "",
     salary: "",
   });
 
+  // Handle input changes
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle Select value changes
+  const onSelectChange = (key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      ...(key === "educationLevel" && value !== "other"
+        ? { customEducationLevel: "" }
+        : {}),
+    }));
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log("Form Data Submitted: ", formData);
+
+    const educationValue =
+      formData.educationLevel === "other"
+        ? formData.customEducationLevel
+        : formData.educationLevel;
+
+    const payload = {
+      title: formData.jobTitle,
+      description: formData.jobDescription,
+      location: formData.location,
+      employmentType: formData.jobType,
+      experienceLevel: formData.experienceLevel,
+      industry: formData.industry,
+      requiredSkills: formData.skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean),
+      applicationDeadline: formData.applicationDeadline,
+      educationLevel: educationValue,
+      salary: formData.salary,
+    };
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/users/create-job-post/${id}`,
-        {
-          title: formData.jobTitle,
-          description: formData.jobDescription,
-          location: formData.location,
-          employmentType: formData.jobType,
-          experienceLevel: formData.experienceLevel,
-          industry: formData.industry,
-          requiredSkills: formData.skills
-            .split(",")
-            .map((skill) => skill.trim()),
-          applicationDeadline: formData.applicationDeadline,
-          educationLevel: formData.educationLevel,
-          salary: formData.salary,
-        }
+        payload
       );
+
       if (response?.data?.success) {
         toast.success("Job posted successfully!");
+        navigate("/employee/home");
       } else {
         toast.error("Failed to post job. Please try again.");
       }
-      console.log(response);
     } catch (error) {
-      toast.error(error?.response?.data?.message);
-      // console.error("Job Post Error: ", error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "An error occurred");
+      // console.error("Job Post Error:", error);
+      toast.error("Job post error!");
     }
-
-    setFormData({
-      jobTitle: "",
-      jobDescription: "",
-      location: "",
-      jobType: "",
-      experienceLevel: "",
-      industry: "",
-      skills: "",
-      applicationDeadline: "",
-      educationLevel: "",
-      salary: "",
-    });
-    navigate("/employee/home");
   };
 
   return (
@@ -134,18 +146,16 @@ const EmployerJobPost = () => {
                 <Label htmlFor="jobType">Job Type</Label>
                 <Select
                   value={formData.jobType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, jobType: value })
-                  }
+                  onValueChange={(value) => onSelectChange("jobType", value)}
                   required
                 >
                   <SelectTrigger id="jobType">
                     <SelectValue placeholder="Select job type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="full-time">Full-time</SelectItem>
-                    <SelectItem value="part-time">Part-time</SelectItem>
-                    <SelectItem value="contract">Contract</SelectItem>
+                    <SelectItem value="Full-time">Full-time</SelectItem>
+                    <SelectItem value="Part-time">Part-time</SelectItem>
+                    <SelectItem value="Contract">Contract</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -155,7 +165,7 @@ const EmployerJobPost = () => {
                 <Select
                   value={formData.experienceLevel}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, experienceLevel: value })
+                    onSelectChange("experienceLevel", value)
                   }
                   required
                 >
@@ -163,9 +173,9 @@ const EmployerJobPost = () => {
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="entry">Entry Level</SelectItem>
-                    <SelectItem value="mid">Mid Level</SelectItem>
-                    <SelectItem value="senior">Senior Level</SelectItem>
+                    <SelectItem value="Entry Level">Entry Level</SelectItem>
+                    <SelectItem value="Mid Level">Mid Level</SelectItem>
+                    <SelectItem value="Senior Level">Senior Level</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -214,7 +224,7 @@ const EmployerJobPost = () => {
               <Select
                 value={formData.educationLevel}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, educationLevel: value })
+                  onSelectChange("educationLevel", value)
                 }
                 required
               >
@@ -226,8 +236,20 @@ const EmployerJobPost = () => {
                   <SelectItem value="associate">Associate Degree</SelectItem>
                   <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
                   <SelectItem value="master">Master's Degree</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
+
+              {formData.educationLevel === "other" && (
+                <Input
+                  type="text"
+                  name="customEducationLevel"
+                  placeholder="Please specify"
+                  value={formData.customEducationLevel}
+                  onChange={onChange}
+                  required
+                />
+              )}
             </div>
 
             <div className="space-y-2">

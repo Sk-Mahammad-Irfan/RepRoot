@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom"; // or 'next/navigation' for Next.js
+import { useNavigate } from "react-router-dom";
 
 const NotFound = () => {
-  const navigate = useNavigate(); // use router.push("/") for Next.js
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 text-center">

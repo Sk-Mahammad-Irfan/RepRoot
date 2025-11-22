@@ -32,7 +32,7 @@ const Verify = () => {
           );
         }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         setStatus("Verification failed. Please try again.");
       }
     };

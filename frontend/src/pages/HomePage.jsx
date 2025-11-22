@@ -48,7 +48,7 @@ const HomePage = () => {
         } catch (err) {
           if (!axios.isCancel(err)) {
             toast.error("Error fetching user");
-            console.error(err);
+            // console.error(err);
           }
         } finally {
           setLoading(false);
@@ -75,7 +75,8 @@ const HomePage = () => {
         );
         if (res?.data?.success) setRecentJobs(res.data.jobPosts);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
+        toast.error("Unable to fetch recent jobs!");
       }
     };
     fetchRecentJobs();
@@ -104,7 +105,7 @@ const HomePage = () => {
   const Navbar = () => (
     <nav className="w-full bg-gray-900 border-b border-gray-800 py-4 px-6 flex justify-between items-center">
       <Link to="/" className="text-xl font-semibold text-purple-400">
-        CareerConnect
+        RepRoot
       </Link>
       {isLoggedIn && (
         <DropdownMenu>
@@ -170,7 +171,7 @@ const HomePage = () => {
                 title={
                   isLoggedIn
                     ? `Welcome back, ${user?.user?.username} 👋`
-                    : "Welcome to CareerConnect"
+                    : "Welcome to RepRoot"
                 }
                 subtitle={
                   isLoggedIn
@@ -182,16 +183,6 @@ const HomePage = () => {
           </CardHeader>
 
           <CardContent>
-            {/* Profile Image */}
-            {/* {user?.user?.profile_img && (
-              <img
-                src={user.user.profile_img}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mx-auto mb-6 border border-gray-700 object-cover"
-              />
-            )} */}
-
-            {/* Role-specific section */}
             {role === "super_admin" && (
               <Link to="/admin/dashboard">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">
@@ -208,7 +199,6 @@ const HomePage = () => {
               </Link>
             )}
 
-            {/* Student Recent Jobs */}
             {role === "student" && (
               <>
                 <Separator className="my-8 bg-gray-700" />
@@ -229,7 +219,7 @@ const HomePage = () => {
                           <p className="text-gray-400">{job.companyName}</p>
                           <p className="text-gray-500">{job.location}</p>
                           <Link
-                            to={`/jobs/${job._id}`}
+                            to={`/job/${job._id}`}
                             className="text-purple-400 text-sm hover:underline"
                           >
                             View Details

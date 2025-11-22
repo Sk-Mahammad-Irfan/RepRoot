@@ -50,7 +50,6 @@ const ChangePassword = () => {
         Change Password
       </h1>
       <form onSubmit={handleChangePassword} className="space-y-5">
-        {/* New Password Field */}
         <div>
           <label className="block text-sm font-medium mb-1">New Password</label>
           <div className="relative">
@@ -71,7 +70,6 @@ const ChangePassword = () => {
           </div>
         </div>
 
-        {/* Confirm Password Field */}
         <div>
           <label className="block text-sm font-medium mb-1">
             Confirm Password
@@ -94,7 +92,6 @@ const ChangePassword = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <Button type="submit" className="w-full">
           Change Password
         </Button>

@@ -83,7 +83,7 @@ const VerifyOtp = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log(email);
+    // console.log(email);
     e.preventDefault();
     try {
       const enteredOtp = otp.join("");

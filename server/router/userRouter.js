@@ -11,16 +11,29 @@ const {
   createEmployeeDetailsController,
   getEmployeeDetailsController,
   createJobPostController,
+  getAllEmployeeController,
+  deleteEmployeeController,
+  approveEmployeeStatusController,
 } = require("../controller/userController");
 const {
   isAuthenticated,
   isSuperAdmin,
   isInstitutionAdmin,
+  isEmployee,
 } = require("../middlewares/authMiddlewares");
+const upload = require("../utils/multer");
 
 const router = express.Router();
 
 router.get("/get-users", isAuthenticated, isSuperAdmin, getAllUsersController);
+
+router.get(
+  "/get-employees",
+  isAuthenticated,
+  isSuperAdmin,
+  getAllEmployeeController
+);
+
 router.get(
   "/get-institute_admin",
   isAuthenticated,
@@ -28,15 +41,27 @@ router.get(
   getAllInstitutionAdminController
 );
 
-router.get("/get-user/:id", isAuthenticated, getSingleUserController);
+router.get("/get-user/:id", getSingleUserController);
 
-router.put("/update-user/:id", isAuthenticated, updateUserProfileController);
+router.put(
+  "/update-user/:id",
+  isAuthenticated,
+  upload,
+  updateUserProfileController
+);
 
 router.put(
   "/instAdmin-status/:instituteAdminId",
   isAuthenticated,
   isSuperAdmin,
   approveStatusController
+);
+
+router.put(
+  "/employee-status/:employeeId",
+  isAuthenticated,
+  isSuperAdmin,
+  approveEmployeeStatusController
 );
 
 router.post(
@@ -52,6 +77,13 @@ router.delete(
   deleteUserController
 );
 
+router.delete(
+  "/delete-employee/:uid",
+  isAuthenticated,
+  isSuperAdmin,
+  deleteEmployeeController
+);
+
 router.get(
   "/student/my-students",
   isInstitutionAdmin,
@@ -61,11 +93,22 @@ router.get(
 router.put(
   "/create-employee-details/:id",
   isAuthenticated,
+  isEmployee,
   createEmployeeDetailsController
 );
 
-router.get("/get-employee/:id", isAuthenticated, getEmployeeDetailsController);
+router.get(
+  "/get-employee/:id",
+  isAuthenticated,
+  isEmployee,
+  getEmployeeDetailsController
+);
 
-router.post("/create-job-post/:id", isAuthenticated, createJobPostController);
+router.post(
+  "/create-job-post/:id",
+  isAuthenticated,
+  isEmployee,
+  createJobPostController
+);
 
 module.exports = router;

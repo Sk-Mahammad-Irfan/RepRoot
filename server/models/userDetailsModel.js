@@ -16,6 +16,11 @@ const userDetailsSchema = new mongoose.Schema({
     maxLength: 150,
     required: true,
   },
+  skillSet: {
+    type: [String],
+    require: true,
+    trim: true,
+  },
   userLocation: { type: String, trim: true, maxLength: 100, required: true },
 
   education: [

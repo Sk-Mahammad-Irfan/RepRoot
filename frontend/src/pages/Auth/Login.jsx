@@ -67,7 +67,8 @@ export default function Login() {
         navigate("/not-approved");
       }
     } catch (error) {
-      console.log("Login error: ", error);
+      // console.log("Login error: ", error);
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -142,7 +143,6 @@ export default function Login() {
 
             <CardContent className="p-6">
               <form className="space-y-5" onSubmit={handleSubmit}>
-                {/* Email */}
                 <div className="space-y-1">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -155,7 +155,6 @@ export default function Login() {
                   />
                 </div>
 
-                {/* Password */}
                 <div className="space-y-1">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -183,7 +182,6 @@ export default function Login() {
                   </div>
                 </div>
 
-                {/* Forgot Password */}
                 <div className="flex justify-end">
                   <Button
                     type="button"
@@ -203,7 +201,6 @@ export default function Login() {
                   </Button>
                 </div>
 
-                {/* Submit */}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -215,14 +212,12 @@ export default function Login() {
                   )}
                 </Button>
 
-                {/* Divider */}
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <div className="flex-grow h-px bg-border" />
                   or
                   <div className="flex-grow h-px bg-border" />
                 </div>
 
-                {/* Google Login */}
                 <Button
                   type="button"
                   variant="outline"
@@ -247,7 +242,6 @@ export default function Login() {
                   )}
                 </Button>
 
-                {/* Register link */}
                 <p className="text-center text-sm text-muted-foreground mt-2">
                   New here?{" "}
                   <a

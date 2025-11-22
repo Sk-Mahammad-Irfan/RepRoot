@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button"; // shadcn Button component
-import { ArrowLeft } from "lucide-react"; // optional icon
+import { Button } from "@/components/ui/button"; 
+import { ArrowLeft } from "lucide-react"; 
 import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -17,7 +17,8 @@ const AdminUsers = () => {
         );
         setUsers(res.data);
       } catch (error) {
-        console.log("Error fetching users:", error);
+        // console.log("Error fetching users:", error);
+        toast.error("Unable to get users");
       }
     };
 
@@ -40,7 +41,8 @@ const AdminUsers = () => {
       }
       // getAllUsers();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      toast.error("Something went wrong!");
     }
   };
 

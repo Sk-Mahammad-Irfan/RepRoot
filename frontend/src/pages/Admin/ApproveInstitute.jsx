@@ -25,7 +25,7 @@ const ApproveInstitute = () => {
       );
       setInstituteAdminUser(data?.users || []);
     } catch (error) {
-      console.error("Error fetching institute admins:", error);
+      // console.error("Error fetching institute admins:", error);
       toast.error("Failed to load institute admins");
     }
   };
@@ -45,7 +45,7 @@ const ApproveInstitute = () => {
       toast.success("Successfully updated");
       getInstituteAdmins();
     } catch (error) {
-      console.error("Error updating status:", error);
+      // console.error("Error updating status:", error);
       toast.error("Failed to update status");
     }
   };

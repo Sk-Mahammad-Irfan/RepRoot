@@ -145,7 +145,6 @@ exports.loginUserController = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check both collections
     let user = await User.findOne({ email: normalizedEmail });
     let role = "student";
 
@@ -160,7 +159,6 @@ exports.loginUserController = async (req, res) => {
       });
     }
 
-    // Check approval status for institution admins
     if (
       user.role === "institution_admin" &&
       user.approvalStatus !== "approved"
@@ -172,7 +170,6 @@ exports.loginUserController = async (req, res) => {
       });
     }
 
-    // Compare password
     const match = await comparePassword(password, user.password);
     if (!match) {
       return res.status(401).json({ message: "Invalid username or password." });
@@ -184,7 +181,7 @@ exports.loginUserController = async (req, res) => {
         message: "Please verify your email to login",
       });
     }
-    // Generate JWT
+
     const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3d",
     });
@@ -230,7 +227,6 @@ exports.registerInstitutionController = async (req, res) => {
     const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password;
 
-    // Basic validation
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -242,10 +238,8 @@ exports.registerInstitutionController = async (req, res) => {
         .json({ message: "Institution with this email already exists" });
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create institution admin
     const institution = await InstitutionAdmin.create({
       name,
       email,
@@ -447,7 +441,6 @@ exports.successGoogleLogin = async (req, res) => {
       });
     }
 
-    // Generate JWT token for the user
     const token = JWT.sign({ _id: req.user._id }, process.env.JWT_SECRET, {
       expiresIn: "3d",
     });
@@ -489,7 +482,6 @@ exports.failureGoogleLogin = async (req, res) => {
   }
 };
 
-// For Employee Registration
 exports.registerEmployeeController = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -557,14 +549,14 @@ exports.loginEmployeeController = async (req, res) => {
       });
     }
 
-    // if (employee.approvalStatus !== "approved") {
-    //   return res.status(200).json({
-    //     success: false,
-    //     redirect: "not-approved",
-    //     message: `Account is ${employee.approvalStatus}. Awaiting SuperAdmin approval.`,
-    //     token,
-    //   });
-    // }
+    if (user.approvalStatus !== "approved") {
+      return res.status(200).json({
+        success: false,
+        redirect: "not-approved",
+        message: `Account is ${user.approvalStatus}. Awaiting SuperAdmin approval.`,
+        token,
+      });
+    }
 
     const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "3d",

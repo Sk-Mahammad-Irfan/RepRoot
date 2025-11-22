@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect } from "react";
-import EmployerRegister from "../forEmployee/EmployerRegister";
 
 export default function Register() {
   const [role, setRole] = useState("student");
@@ -62,7 +61,7 @@ export default function Register() {
         toast.error(err.response?.data?.message || "Registration failed.");
       }
     } catch (err) {
-      console.error("Registration error:", err);
+      // console.error("Registration error:", err);
       toast.error(err.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);

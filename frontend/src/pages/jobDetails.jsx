@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
   Card,
@@ -9,22 +9,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import toast from "react-hot-toast";
 
-const EmployerJobDetails = () => {
+const JobDetails = () => {
   const [jobs, setJobs] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [candidates, setCandidates] = useState({});
-  const [expandedJob, setExpandedJob] = useState(null);
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getJobDetails = async () => {
       setLoading(true);
       try {
-        const token = JSON.parse(localStorage.getItem("auth") || "{}")?.token;
+        const storedAuth = localStorage.getItem("auth");
+        if (storedAuth) {
+          const parsedAuth = JSON.parse(storedAuth);
+          setUser(parsedAuth.user);
+        }
+
+        const token = JSON.parse(storedAuth)?.token;
         if (!token) {
           setError("No authentication token found.");
           setLoading(false);
@@ -50,30 +57,26 @@ const EmployerJobDetails = () => {
     getJobDetails();
   }, [id]);
 
-  const getAppliedCandidates = async (jobId) => {
+  const handleApply = async (jobId) => {
     try {
-      setLoading(true);
       const storedAuth = localStorage.getItem("auth");
       const token = JSON.parse(storedAuth)?.token;
+      const userId = JSON.parse(storedAuth)?.user?._id;
 
-      // console.log(jobId);
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/jobs/applied-candidates/${jobId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      if (!token || !userId) {
+        alert("You must be logged in to apply.");
+        return;
+      }
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/jobs/apply`,
+        { jobId, userId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      // console.log(res);
-
-      setCandidates((prev) => ({
-        ...prev,
-        [jobId]: res?.data?.candidates,
-      }));
-
-      setExpandedJob(expandedJob === jobId ? null : jobId); // toggle
-    } catch (err) {
-      // console.error("Error fetching candidates:", err);
-      toast.error("Error fetching candidates");
+      toast.success(res.data.message);
+      navigate("/");
+    } catch (error) {
+      toast.error(error.response.data.message);
     }
   };
 
@@ -89,27 +92,62 @@ const EmployerJobDetails = () => {
 
   return (
     <div className="container mx-auto p-6 bg-slate-900 min-h-screen text-slate-200">
-      <h1 className="text-3xl font-bold mb-10 text-center text-slate-100 tracking-tight">
+      <h1 className="text-3xl font-bold mb-10 text-center text-slate-100">
         Job Details
       </h1>
 
-      {jobs.length > 0 ? (
+      {loading ? (
+        <div className="flex flex-col items-center space-y-6">
+          {[jobs].map((i) => (
+            <Card
+              key={i}
+              className="w-full max-w-2xl bg-slate-800 border border-slate-700 animate-pulse"
+            >
+              <CardHeader>
+                <Skeleton className="h-6 w-40 bg-slate-700" />
+                <Skeleton className="h-4 w-28 bg-slate-700 mt-2" />
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full bg-slate-700" />
+                <Skeleton className="h-4 w-3/4 bg-slate-700" />
+                <Skeleton className="h-4 w-2/3 bg-slate-700" />
+                <Skeleton className="h-4 w-1/2 bg-slate-700" />
+
+                <div className="mt-4">
+                  <Skeleton className="h-4 w-32 bg-slate-700 mb-2" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-16 bg-slate-700 rounded-full" />
+                    <Skeleton className="h-6 w-16 bg-slate-700 rounded-full" />
+                    <Skeleton className="h-6 w-16 bg-slate-700 rounded-full" />
+                  </div>
+                </div>
+
+                <Skeleton className="h-4 w-40 bg-slate-700 mt-4" />
+
+                <Skeleton className="h-5 w-20 bg-slate-700 mt-3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : jobs.length > 0 ? (
+        // --- REAL JOB CARDS ---
         <div className="flex flex-col items-center space-y-6">
           {jobs.map((job) => (
             <Card
               key={job._id}
-              className="w-full max-w-2xl bg-slate-800 border border-slate-700 shadow-md hover:shadow-lg hover:shadow-slate-700/40 transition-all rounded-xl"
+              className="w-full max-w-2xl bg-slate-800 border border-slate-700 hover:shadow-xl hover:shadow-slate-700/40 transition-all"
             >
-              <CardHeader className="pb-4">
-                <CardTitle className="text-2xl font-semibold text-slate-100">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-slate-100">
                   {job.title}
                 </CardTitle>
-                <CardDescription className="text-slate-400 text-sm">
+                <CardDescription className="text-slate-400">
                   {job.companyName}
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="space-y-4 text-sm text-slate-300">
+              <CardContent className="space-y-3 text-sm text-slate-300">
                 <p>
                   <strong className="text-slate-400">Description:</strong>{" "}
                   {job.description}
@@ -140,6 +178,7 @@ const EmployerJobDetails = () => {
                   <strong className="text-slate-400">Education Level:</strong>{" "}
                   {job.educationLevel}
                 </p>
+
                 <p>
                   <strong className="text-slate-400">
                     Application Deadline:
@@ -157,7 +196,7 @@ const EmployerJobDetails = () => {
                         <Badge
                           key={i}
                           variant="secondary"
-                          className="bg-slate-700 text-slate-200 border border-slate-600 hover:bg-slate-600"
+                          className="bg-slate-700 text-slate-200 border border-slate-600"
                         >
                           {skill}
                         </Badge>
@@ -168,61 +207,19 @@ const EmployerJobDetails = () => {
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-500 pt-2 italic">
-                  Posted on:{" "}
-                  {new Date(job.createdAt).toLocaleDateString("en-GB")}
+                <p className="text-xs text-slate-500 pt-2">
+                  <em>
+                    Posted on:{" "}
+                    {new Date(job.createdAt).toLocaleDateString("en-GB")}
+                  </em>
                 </p>
 
                 <button
-                  onClick={() => getAppliedCandidates(job?._id)}
-                  className="text-blue-400 hover:text-blue-300 underline text-sm mt-3"
+                  onClick={() => handleApply(job._id)}
+                  className="text-blue-400 hover:text-blue-300 hover:underline mt-3"
                 >
-                  {expandedJob === job._id
-                    ? "Hide Applied Candidates"
-                    : "View Applied Candidates"}
+                  Apply
                 </button>
-
-                {expandedJob === job._id && (
-                  <div className="mt-5 border-t border-slate-700 pt-4">
-                    <h3 className="font-semibold text-slate-100 mb-3 text-lg">
-                      Applied Candidates
-                    </h3>
-
-                    {candidates[job._id]?.length > 0 ? (
-                      candidates[job._id].map((user) => (
-                        <div
-                          key={user._id}
-                          className="border border-slate-700 rounded-md p-4 mb-3 bg-slate-800 shadow-sm"
-                        >
-                          <p>
-                            <strong className="text-slate-400">Name:</strong>{" "}
-                            {user.username}
-                          </p>
-                          <p>
-                            <strong className="text-slate-400">Email:</strong>{" "}
-                            {user.email}
-                          </p>
-                          {user.phone && (
-                            <p>
-                              <strong className="text-slate-400">Phone:</strong>{" "}
-                              {user.phone}
-                            </p>
-                          )}
-                          <Link
-                            className="text-white font-bold"
-                            to={`/profile/${user._id}`}
-                          >
-                            Details
-                          </Link>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-slate-500 text-sm">
-                        No candidates have applied yet.
-                      </p>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))}
@@ -236,4 +233,4 @@ const EmployerJobDetails = () => {
   );
 };
 
-export default EmployerJobDetails;
+export default JobDetails;

@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAuth } from "../context/auth";
 import { toast } from "react-hot-toast";
 import {
   Card,
@@ -15,34 +14,17 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const ProfilePage = () => {
+const ProfileDetailsPage = () => {
   const [user, setUser] = useState(null);
   const [education, setEducation] = useState([]);
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
-  const [auth] = useAuth();
-
-  const getToken = () =>
-    auth?.token || JSON.parse(localStorage.getItem("auth") || "{}")?.token;
 
   useEffect(() => {
-    const token = getToken();
-
-    if (!token) {
-      toast.error("No auth token found.");
-      setLoading(false);
-      return;
-    }
-
     const fetchUser = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/users/get-user/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `${import.meta.env.VITE_API_URL}/api/users/get-user/${id}`
         );
         setUser(response.data);
       } catch (error) {
@@ -54,13 +36,15 @@ const ProfilePage = () => {
     };
 
     fetchUser();
-  }, [auth?.token, id]);
+  }, []);
 
   useEffect(() => {
     setEducation(user?.userDetails?.education || []);
   }, [user?.userDetails?.education]);
 
   // console.log(education);
+
+  // console.log(user);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-black text-zinc-100 px-4 sm:px-6 py-12">
@@ -141,6 +125,23 @@ const ProfilePage = () => {
                   <span className="font-medium text-zinc-400">Location:</span>{" "}
                   {user?.userDetails?.userLocation || "Unknown"}
                 </p>
+                <div>
+                  <span className="font-medium text-zinc-400">Skills:</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {user?.userDetails?.skillSet?.length ? (
+                      user.userDetails.skillSet.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 text-sm bg-zinc-800 border border-zinc-700 rounded-full text-zinc-200 hover:bg-zinc-700 transition"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-zinc-500 text-sm">No skills added.</p>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -198,4 +199,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default ProfileDetailsPage;

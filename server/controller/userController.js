@@ -1,15 +1,17 @@
-const { hashPassword, comparePassword } = require("../helper/authHelper");
 const EmployeeDetails = require("../models/employeeDetailsModel");
 const Employee = require("../models/employeeModel");
 const InstitutionAdmin = require("../models/institutionAdminModel");
 const JobPost = require("../models/jobPostModel");
 const UserDetails = require("../models/userDetailsModel");
 const User = require("../models/userModel");
-const JWT = require("jsonwebtoken");
+const cloudinary = require("../utils/cloudinary");
 
 exports.getAllUsersController = async (req, res) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).select(
+      "-googleId -otp -otpExpiry -profile_img -token -password"
+    );
+
     res.status(200).send({
       success: true,
       message: "Users fetched successfully",
@@ -50,6 +52,7 @@ exports.getSingleUserController = async (req, res) => {
         role: user.role,
         institute: user.institution?.name || null,
         profile_img: user.profile_img,
+        skillSet: user.skillSet,
       },
       userDetails,
     });
@@ -65,21 +68,34 @@ exports.getSingleUserController = async (req, res) => {
 
 exports.updateUserProfileController = async (req, res) => {
   try {
-    const { username, userBio, userLocation, education = [] } = req.body;
+    const { username, userBio, userLocation } = req.body;
+
+    let { education, skillSet } = req.body;
     const userId = req.params.id;
 
-    // Basic validation
-    if (
-      !username ||
-      !userBio ||
-      !userLocation ||
-      !Array.isArray(education) ||
-      education.length === 0
-    ) {
+    console.log(skillSet);
+
+    if (typeof education === "string") education = JSON.parse(education);
+    if (typeof skillSet === "string") skillSet = JSON.parse(skillSet);
+
+    if (!username || !userBio || !userLocation || !Array.isArray(education)) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Validate each education entry
+    if (!Array.isArray(skillSet)) {
+      return res.status(400).json({ message: "skillSet must be an array" });
+    }
+
+    if (skillSet.some((s) => !s.trim())) {
+      return res.status(400).json({ message: "Skill fields cannot be empty" });
+    }
+
+    if (skillSet.some((s) => s.length > 50)) {
+      return res.status(400).json({
+        message: "Each skill must be under 50 characters",
+      });
+    }
+
     const currentYear = new Date().getFullYear();
     for (const edu of education) {
       const {
@@ -109,9 +125,9 @@ exports.updateUserProfileController = async (req, res) => {
 
       if (
         startYear < 1900 ||
-        startYear > currentYear ||
+        startYear > currentYear + 10 ||
         endYear < 1900 ||
-        endYear > currentYear ||
+        endYear > currentYear + 10 ||
         startYear > endYear
       ) {
         return res
@@ -120,33 +136,42 @@ exports.updateUserProfileController = async (req, res) => {
       }
     }
 
-    // Check if user exists in User collection
     const userExists = await User.findById(userId);
     if (!userExists) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "uploads",
+      });
+
+      userExists.profile_img = result.secure_url;
+
+      const fs = require("fs");
+      fs.unlinkSync(req.file.path);
+    }
+
     userExists.username = username;
     await userExists.save();
 
-    // Check if user already has a UserDetails entry
     const existingDetails = await UserDetails.findOne({ user: userId });
 
     let updatedProfile;
 
     if (existingDetails) {
-      // Update existing
       existingDetails.userBio = userBio;
       existingDetails.userLocation = userLocation;
       existingDetails.education = education;
+      existingDetails.skillSet = skillSet;
       updatedProfile = await existingDetails.save();
     } else {
-      // Create new
       updatedProfile = await UserDetails.create({
         user: userId,
         userBio,
         userLocation,
         education,
+        skillSet,
       });
     }
 
@@ -171,7 +196,6 @@ exports.institutionAdminAssignmentController = async (req, res) => {
     const { approvalStatus } = req.body;
     // console.log(institutionId, approvalStatus);
 
-    // Validate approvalStatus
     const validStatuses = ["pending", "approved", "rejected"];
     if (!validStatuses.includes(approvalStatus)) {
       return res.status(400).json({
@@ -340,11 +364,11 @@ exports.getAllApprovedStudentsByInstitutionAdmin = async (req, res) => {
 exports.createEmployeeDetailsController = async (req, res) => {
   try {
     const { companyName, description, others } = req.body;
-    // Basic validation
+
     if (!companyName || !description || others == null) {
       return res.status(400).json({ message: "Missing required fields" });
     }
-    // Check if user exists in User collection
+
     const empId = req.params.id;
     const userExists = await Employee.findById(empId);
     if (!userExists) {
@@ -529,6 +553,162 @@ exports.getAllJobPostsController = async (req, res) => {
     return res.status(500).send({
       success: false,
       message: "Unable to fetch job posts",
+      error,
+    });
+  }
+};
+
+exports.appJobController = async (req, res) => {
+  try {
+    const { jobId, userId } = req.body;
+    if (!jobId || !userId) {
+      return res.status(400).json({
+        success: false,
+        message: "jobId and userId are required.",
+      });
+    }
+
+    const job = await JobPost.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found.",
+      });
+    }
+
+    if (job.appliedCandidates.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already applied for this job.",
+      });
+    }
+    job.appliedCandidates.push(userId);
+    await job.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully applied for the job.",
+      job,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to apply",
+      error,
+    });
+  }
+};
+
+exports.getAppliedCandidatesController = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    if (!jobId) {
+      return res.status(400).json({
+        success: false,
+        message: "jobId is required.",
+      });
+    }
+
+    const job = await JobPost.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found.",
+      });
+    }
+
+    if (!job.appliedCandidates || job.appliedCandidates.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No candidates have applied yet.",
+        candidates: [],
+      });
+    }
+
+    const candidates = await User.find({
+      _id: { $in: job.appliedCandidates },
+    }).select("-password -googleId -otp -otpExpiry -token");
+
+    const candidateDetails = await UserDetails.find({
+      user: { $in: job.appliedCandidates },
+    });
+
+    const mergedCandidates = candidates.map((user) => {
+      const details = candidateDetails.find(
+        (detail) => detail.user.toString() === user._id.toString()
+      );
+
+      return {
+        ...user.toObject(),
+        details: details || null,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Applied candidates fetched successfully.",
+      totalCandidates: mergedCandidates.length,
+      candidates: mergedCandidates,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to get candidates name",
+      error,
+    });
+  }
+};
+
+exports.getAllEmployeeController = async (req, res) => {
+  try {
+    const employee = await Employee.find({}).select("-password");
+
+    res.status(200).send({
+      success: true,
+      message: "Employee fetched successfully",
+      employee,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to get employee",
+      error,
+    });
+  }
+};
+
+exports.approveEmployeeStatusController = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { approvalStatus } = req.body;
+    const status = await Employee.findByIdAndUpdate(
+      employeeId,
+      { approvalStatus },
+      { new: true }
+    );
+    res.json(status);
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to approve institution admin",
+      error,
+    });
+  }
+};
+
+exports.deleteEmployeeController = async (req, res) => {
+  try {
+    await Employee.findByIdAndDelete(req.params.uid);
+
+    res.status(200).send({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Unable to delete user",
       error,
     });
   }

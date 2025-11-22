@@ -79,7 +79,8 @@ const EmployerDetailsPage = () => {
           });
         }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
+        toast.error(error.response.data.message);
       }
     };
     if (id) {
@@ -129,7 +130,7 @@ const EmployerDetailsPage = () => {
                 name="others"
                 value={formData.others}
                 onChange={handleInputChange}
-                placeholder="Any additional details"
+                placeholder="Any additional details (E.g linkedIn, website)"
                 className="min-h-[100px]"
               />
             </div>
